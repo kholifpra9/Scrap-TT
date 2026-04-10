@@ -35,6 +35,35 @@ function broadcast(clientId, data) {
   if (ws && ws.readyState === 1) ws.send(JSON.stringify(data));
 }
 
+function cleanOldFolders() {
+  // Ambil folder yang masih dipakai oleh 5 job terbaru
+  const activeJobs = Array.from(commentJobs.values())
+    .sort((a, b) => b.startTime - a.startTime)
+    .slice(0, 5);
+
+  const activeFolders = new Set(
+    activeJobs
+      .flatMap(j => [j.videosCsv, j.commentsCsv])
+      .filter(Boolean)
+      .map(f => f.split('/')[0]) // ambil nama foldernya aja
+  );
+
+  // Scan semua folder scrape_ di disk
+  const entries = fs.readdirSync(__dirname);
+  const scrapeFolders = entries.filter(f =>
+    f.startsWith('scrape_') &&
+    fs.statSync(path.join(__dirname, f)).isDirectory()
+  );
+
+  // Hapus yang tidak ada di active jobs
+  scrapeFolders.forEach(folder => {
+    if (!activeFolders.has(folder)) {
+      fs.rmSync(path.join(__dirname, folder), { recursive: true, force: true });
+      console.log(`🗑️ Deleted old folder: ${folder}`);
+    }
+  });
+}
+
 // Comment scraper
 app.post('/api/scrape-comments', (req, res) => {
   const { query, videoCount = 20, commentCount = 500, clientId } = req.body;
@@ -79,6 +108,7 @@ app.post('/api/scrape-comments', (req, res) => {
   proc.on('close', (code) => {
     job.status = code === 0 ? 'done' : 'error';
     job.endTime = Date.now();
+    cleanOldFolders();
     const safeQuery = query.replace(/[^a-zA-Z0-9]/g, '_');
     const allEntries = fs.readdirSync(__dirname);
     const scrapeFolder = allEntries

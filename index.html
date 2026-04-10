@@ -6,6 +6,7 @@
 <title>TikTok Comment Scraper</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Clash+Display:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+  
   :root {
     --bg: #f5f0e8;
     --surface: #ede8df;
@@ -365,6 +366,140 @@
     .form-grid { grid-template-columns: 1fr; }
     .result-grid { grid-template-columns: 1fr; }
   }
+
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--bg);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    opacity: 0;
+    transition: all 0.25s ease;
+    z-index: 9999;
+    white-space: nowrap;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .btn-info {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 100;
+    transition: all 0.15s;
+  }
+  .btn-info:hover { background: var(--ink); color: var(--bg); }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-overlay.visible { display: flex; }
+
+  .modal {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    max-width: 540px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: slideIn 0.25s ease;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--muted);
+    line-height: 1;
+    padding: 4px;
+  }
+  .modal-close:hover { color: var(--ink); }
+
+  .modal-section {
+    margin-bottom: 20px;
+  }
+
+  .modal-section-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .modal-section-title::before {
+    content: '';
+    display: inline-block;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .modal-section p, .modal-section li {
+    font-size: 13px;
+    color: var(--ink2);
+    line-height: 1.7;
+  }
+
+  .modal-section ul {
+    padding-left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .modal-tag {
+    display: inline-block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 2px 7px;
+    color: var(--ink2);
+  }
 </style>
 </head>
 <body>
@@ -374,6 +509,7 @@
     <div class="badge">Comment Scraper</div>
     <h1>TikTok<br><span>Comment</span> Harvester</h1>
     <p class="sub">Scrape videos + all comments by keyword → dual CSV export</p>
+    <button class="btn-info" onclick="openModal()">?</button>
   </header>
 
   <!-- Search Form -->
@@ -564,8 +700,17 @@ function resetBtn() {
   document.getElementById('scrapeBtn').textContent = '▶ Start Scraping';
 }
 
-function dl(filename) {
-  window.open(`${API}/api/download?file=${encodeURIComponent(filename)}`, '_blank');
+async function dl(filename) {
+  try {
+    const res = await fetch(`${API}/api/download?file=${encodeURIComponent(filename)}`);
+    if (!res.ok) {
+      showToast('⚠️ File sudah dihapus otomatis. Silakan scrape ulang.');
+      return;
+    }
+    window.open(`${API}/api/download?file=${encodeURIComponent(filename)}`, '_blank');
+  } catch {
+    showToast('⚠️ Gagal menghubungi server.');
+  }
 }
 
 async function loadHistory() {
@@ -592,6 +737,68 @@ loadHistory();
 document.getElementById('queryInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') startScrape();
 });
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+function openModal() {
+  document.getElementById('modalOverlay').classList.add('visible');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('visible');
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
 </script>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Panduan Pemakaian</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Cara Pakai</div>
+      <ul>
+        <li>Isi <strong>keyword</strong> pencarian TikTok</li>
+        <li>Set <strong>Max Videos</strong> — jumlah video yang akan di-scrape</li>
+        <li>Set <strong>Max Comments/Video</strong> — batas komentar per video</li>
+        <li>Klik <strong>Start Scraping</strong> dan tunggu hingga selesai</li>
+        <li>Download hasil via tombol <strong>Videos CSV</strong> atau <strong>Comments CSV</strong></li>
+      </ul>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Komentar yang Tidak Diambil</div>
+      <p style="margin-bottom:8px">Komentar berikut otomatis difilter dan tidak masuk ke CSV:</p>
+      <ul>
+        <li>Hanya berisi emoji — <span class="modal-tag">😂😭🔥</span></li>
+        <li>Hanya berisi sticker TikTok — <span class="modal-tag">[sticker:haha]</span></li>
+        <li>Hanya berisi tag akun — <span class="modal-tag">@username</span></li>
+        <li>Kombinasi ketiganya tanpa kata/kalimat nyata</li>
+      </ul>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Penyimpanan File</div>
+      <ul>
+        <li>Setiap scrape menghasilkan 1 folder berisi <span class="modal-tag">videos.csv</span> dan <span class="modal-tag">comments.csv</span></li>
+        <li>Sistem hanya menyimpan <strong>5 hasil scrape terakhir</strong></li>
+        <li>Folder lama otomatis dihapus saat ada scrape baru selesai</li>
+        <li>Segera download hasil scrape sebelum tertimpa job berikutnya</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
 </body>
 </html>
