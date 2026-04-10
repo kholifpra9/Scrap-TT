@@ -30,7 +30,6 @@
     min-height: 100vh;
   }
 
-  /* Grain texture */
   body::after {
     content: '';
     position: fixed;
@@ -40,17 +39,9 @@
     z-index: 999;
   }
 
-  .container {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 48px 24px;
-  }
+  .container { max-width: 860px; margin: 0 auto; padding: 48px 24px; }
 
-  /* Header */
-  header {
-    margin-bottom: 48px;
-    animation: slideIn 0.5s ease both;
-  }
+  header { margin-bottom: 48px; animation: slideIn 0.5s ease both; }
 
   .badge {
     display: inline-block;
@@ -66,32 +57,13 @@
     margin-bottom: 16px;
   }
 
-  h1 {
-    font-size: clamp(32px, 6vw, 52px);
-    font-weight: 700;
-    line-height: 1.05;
-    letter-spacing: -1.5px;
-    color: var(--ink);
-    margin-bottom: 10px;
-  }
-
+  h1 { font-size: clamp(32px, 6vw, 52px); font-weight: 700; line-height: 1.05; letter-spacing: -1.5px; color: var(--ink); margin-bottom: 10px; }
   h1 span { color: var(--accent); }
 
-  .sub {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-    letter-spacing: 0.5px;
-  }
+  .sub { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 0.5px; }
 
-  /* Divider */
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 32px 0;
-  }
+  .divider { height: 1px; background: var(--border); margin: 32px 0; }
 
-  /* Card */
   .card {
     background: var(--card);
     border: 1.5px solid var(--border);
@@ -121,25 +93,12 @@
     background: var(--accent);
   }
 
-  /* Form */
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 130px 160px;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
+  .form-grid { display: grid; grid-template-columns: 1fr 130px 160px; gap: 12px; margin-bottom: 16px; }
   .field { display: flex; flex-direction: column; gap: 5px; }
 
-  label {
-    font-family: var(--mono);
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--muted);
-  }
+  label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); }
 
-  input {
+  input, textarea {
     background: var(--surface);
     border: 1.5px solid var(--border);
     border-radius: 8px;
@@ -151,8 +110,9 @@
     transition: border-color 0.15s;
   }
 
-  input:focus { border-color: var(--accent); }
-  input::placeholder { color: var(--muted); }
+  textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
 
   .btn-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 
@@ -174,88 +134,35 @@
   .btn:active { transform: translateY(0); }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-  .btn.outline {
-    background: transparent;
-    color: var(--ink);
-    border: 1.5px solid var(--border);
-  }
+  .btn.outline { background: transparent; color: var(--ink); border: 1.5px solid var(--border); }
   .btn.outline:hover:not(:disabled) { border-color: var(--ink); background: transparent; }
 
-  /* Status */
-  .status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
+  .btn.ai {
+    background: var(--accent2);
+    color: white;
   }
+  .btn.ai:hover:not(:disabled) { background: #1a60c8; }
 
-  .dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--muted);
-    flex-shrink: 0;
-  }
+  .status { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
   .dot.running { background: var(--accent); animation: blink 0.8s infinite; }
   .dot.done { background: var(--green); }
   .dot.error { background: var(--accent); }
 
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.2; }
-  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
-  /* Progress */
-  .progress-wrap {
-    margin-top: 16px;
-    display: none;
-  }
+  .progress-wrap { margin-top: 16px; display: none; }
   .progress-wrap.visible { display: block; }
 
-  .progress-label {
-    display: flex;
-    justify-content: space-between;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
+  .progress-label { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .progress-bar { height: 4px; background: var(--surface); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; width: 0%; }
 
-  .progress-bar {
-    height: 4px;
-    background: var(--surface);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 2px;
-    transition: width 0.4s ease;
-    width: 0%;
-  }
-
-  /* Terminal */
-  .terminal {
-    background: var(--ink);
-    border-radius: 12px;
-    overflow: hidden;
-    display: none;
-    margin-bottom: 20px;
-    animation: slideIn 0.3s ease both;
-  }
+  .terminal { background: var(--ink); border-radius: 12px; overflow: hidden; display: none; margin-bottom: 20px; animation: slideIn 0.3s ease both; }
   .terminal.visible { display: block; }
 
-  .term-header {
-    background: #2a2520;
-    padding: 10px 16px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
+  .term-header { background: #2a2520; padding: 10px 16px; display: flex; align-items: center; gap: 6px; }
   .term-dot { width: 10px; height: 10px; border-radius: 50%; }
 
   .term-body {
@@ -277,34 +184,19 @@
   .log.ok { color: #6dda9e; }
   .log.er { color: #e8705a; }
 
-  @keyframes logIn {
-    from { opacity: 0; transform: translateX(-6px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
+  @keyframes logIn { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
 
-  /* Result */
   .result { display: none; }
   .result.visible { display: block; }
 
-  .result-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 16px;
-  }
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
 
-  .result-item {
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 18px;
-  }
-
+  .result-item { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 16px 18px; }
   .result-item .rl { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 4px; }
   .result-item .rv { font-size: 22px; font-weight: 700; color: var(--ink); }
   .result-item .rf { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 2px; word-break: break-all; }
 
-  .dl-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .dl-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
 
   .btn-dl {
     background: transparent;
@@ -321,8 +213,60 @@
     align-items: center;
     gap: 6px;
   }
-
   .btn-dl:hover { background: var(--ink); color: var(--bg); }
+
+  /* AI Analysis */
+  .analyze-section { display: none; margin-top: 4px; }
+  .analyze-section.visible { display: block; }
+
+  .api-key-row { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 16px; }
+  .api-key-row .field { flex: 1; }
+
+  .ai-result {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 16px;
+    display: none;
+    line-height: 1.8;
+    font-size: 14px;
+    color: var(--ink2);
+  }
+  .ai-result.visible { display: block; }
+
+  .ai-result h3 {
+    font-size: 13px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    margin-top: 20px;
+  }
+  .ai-result h3:first-child { margin-top: 0; }
+
+  .ai-result p { margin-bottom: 10px; }
+
+  .ai-loading {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 12px;
+  }
+  .ai-loading.visible { display: flex; }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent2);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   /* History */
   .history-list { display: flex; flex-direction: column; gap: 8px; }
@@ -341,29 +285,19 @@
   .history-q { font-weight: 600; flex: 1; }
   .history-meta { font-family: var(--mono); font-size: 11px; color: var(--muted); }
 
-  .tag {
-    font-family: var(--mono);
-    font-size: 9px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 3px 8px;
-    border-radius: 4px;
-  }
+  .tag { font-family: var(--mono); font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; }
   .tag.done { background: #d4f5e5; color: #1a7a4a; }
   .tag.running { background: #fde8e0; color: #c04020; }
   .tag.error { background: #fde8e0; color: #c04020; }
 
   .empty { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; padding: 24px; }
 
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
   @media (max-width: 640px) {
     .form-grid { grid-template-columns: 1fr; }
     .result-grid { grid-template-columns: 1fr; }
+    .api-key-row { flex-direction: column; }
   }
 </style>
 </head>
@@ -373,7 +307,7 @@
   <header>
     <div class="badge">Comment Scraper</div>
     <h1>TikTok<br><span>Comment</span> Harvester</h1>
-    <p class="sub">Scrape videos + all comments by keyword → dual CSV export</p>
+    <p class="sub">Scrape videos + all comments by keyword → dual CSV export + AI analysis</p>
   </header>
 
   <!-- Search Form -->
@@ -426,6 +360,34 @@
     <div class="card-title">Result</div>
     <div class="result-grid" id="resultGrid"></div>
     <div class="dl-row" id="dlRow"></div>
+
+    <!-- AI Analysis Section -->
+    <div class="analyze-section" id="analyzeSection">
+      <div class="divider" style="margin: 0 0 20px 0"></div>
+      <div class="card-title">Analyze with AI</div>
+
+      <div class="api-key-row">
+        <div class="field">
+          <label>Anthropic API Key</label>
+          <input type="password" id="apiKeyInput" placeholder="sk-ant-..." />
+        </div>
+        <button class="btn outline" onclick="saveApiKey()" style="white-space:nowrap;height:40px">Save Key</button>
+      </div>
+
+      <div class="field" style="margin-bottom: 14px">
+        <label>Konteks Bisnis Kamu</label>
+        <textarea id="contextInput" placeholder="Contoh: Saya sedang ingin mengembangkan produk herbal dan sedang melakukan social listening melalui komentar pada video kompetitor..."></textarea>
+      </div>
+
+      <button class="btn ai" id="analyzeBtn" onclick="analyzeComments()">✦ Analyze Comments</button>
+
+      <div class="ai-loading" id="aiLoading">
+        <div class="spinner"></div>
+        <span>Menganalisis komentar...</span>
+      </div>
+
+      <div class="ai-result" id="aiResult"></div>
+    </div>
   </div>
 
   <div class="divider"></div>
@@ -442,6 +404,7 @@
 let ws = null;
 let clientId = null;
 let isRunning = false;
+let lastCommentsCsv = null;
 const API = `${location.protocol}//${location.host}`;
 const WS_URL = `ws://${location.host}`;
 
@@ -456,6 +419,20 @@ function connectWS() {
   ws.onclose = () => setTimeout(connectWS, 2000);
 }
 connectWS();
+
+// Load saved API key
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('anthropic_api_key');
+  if (saved) document.getElementById('apiKeyInput').value = saved;
+});
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (key) {
+    localStorage.setItem('anthropic_api_key', key);
+    document.getElementById('apiKeyInput').placeholder = 'Key tersimpan ✓';
+  }
+}
 
 function setStatus(state, text) {
   document.getElementById('statusDot').className = 'dot ' + state;
@@ -473,7 +450,6 @@ function appendLog(line) {
   body.appendChild(div);
   body.scrollTop = body.scrollHeight;
 
-  // Update progress bar from log
   const videoMatch = line.match(/\[(\d+)\/(\d+)\]/);
   if (videoMatch) {
     const cur = parseInt(videoMatch[1]);
@@ -502,9 +478,13 @@ async function startScrape() {
   if (!query) { document.getElementById('queryInput').focus(); return; }
 
   isRunning = true;
+  lastCommentsCsv = null;
   document.getElementById('terminal').classList.add('visible');
   document.getElementById('termBody').innerHTML = '';
   document.getElementById('resultCard').classList.remove('visible');
+  document.getElementById('analyzeSection').classList.remove('visible');
+  document.getElementById('aiResult').classList.remove('visible');
+  document.getElementById('aiResult').innerHTML = '';
   document.getElementById('progressWrap').classList.remove('visible');
   document.getElementById('scrapeBtn').disabled = true;
   document.getElementById('scrapeBtn').textContent = '⏳ Running...';
@@ -533,6 +513,8 @@ function onDone(msg) {
   card.classList.add('visible');
 
   if (msg.status === 'done') {
+    lastCommentsCsv = msg.commentsCsv || null;
+
     document.getElementById('resultGrid').innerHTML = `
       <div class="result-item">
         <div class="rl">Videos Scraped</div>
@@ -550,6 +532,11 @@ function onDone(msg) {
       ${msg.commentsCsv ? `<button class="btn-dl" onclick="dl('${msg.commentsCsv}')">💬 Download Comments CSV</button>` : ''}
     `;
     setStatus('done', `Done! ${msg.commentCount} comments collected`);
+
+    // Tampilkan section AI
+    if (lastCommentsCsv) {
+      document.getElementById('analyzeSection').classList.add('visible');
+    }
   } else {
     document.getElementById('resultGrid').innerHTML = `<div class="result-item"><div class="rl">Status</div><div class="rv" style="color:var(--accent)">Failed</div></div>`;
     document.getElementById('dlRow').innerHTML = '';
@@ -566,6 +553,58 @@ function resetBtn() {
 
 function dl(filename) {
   window.open(`${API}/api/download?file=${encodeURIComponent(filename)}`, '_blank');
+}
+
+async function analyzeComments() {
+  const apiKey = document.getElementById('apiKeyInput').value.trim();
+  const context = document.getElementById('contextInput').value.trim();
+
+  if (!apiKey) {
+    alert('Masukkan Anthropic API Key dulu ya.');
+    document.getElementById('apiKeyInput').focus();
+    return;
+  }
+  if (!lastCommentsCsv) {
+    alert('Belum ada data komentar.');
+    return;
+  }
+
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('aiLoading').classList.add('visible');
+  document.getElementById('aiResult').classList.remove('visible');
+  document.getElementById('aiResult').innerHTML = '';
+
+  try {
+    const res = await fetch(`${API}/api/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey, commentsCsv: lastCommentsCsv, context }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Analyze failed');
+
+    const aiResult = document.getElementById('aiResult');
+    aiResult.innerHTML = formatAnalysis(data.result);
+    aiResult.classList.add('visible');
+  } catch (err) {
+    alert('Error: ' + err.message);
+  } finally {
+    document.getElementById('analyzeBtn').disabled = false;
+    document.getElementById('aiLoading').classList.remove('visible');
+  }
+}
+
+function formatAnalysis(text) {
+  // Format markdown-ish output jadi HTML sederhana
+  return text
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/^/, '<p>')
+    .replace(/$/, '</p>');
 }
 
 async function loadHistory() {

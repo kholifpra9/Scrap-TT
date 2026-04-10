@@ -98,6 +98,74 @@ app.get('/api/jobs-comments', (req, res) => {
   res.json(Array.from(commentJobs.values()).map(j => ({ id: j.id, query: j.query, videoCount: j.videoCountResult, commentCount: j.commentCountResult, status: j.status, videosCsv: j.videosCsv, commentsCsv: j.commentsCsv, duration: j.endTime ? ((j.endTime - j.startTime) / 1000).toFixed(1) : null })).reverse());
 });
 
+// AI Analyze
+app.post('/api/analyze', async (req, res) => {
+  const { apiKey, commentsCsv, context } = req.body;
+  if (!apiKey || !commentsCsv) return res.status(400).json({ error: 'apiKey and commentsCsv required' });
+
+  const filePath = path.join(__dirname, commentsCsv);
+  if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File not found' });
+
+  // Baca CSV, ambil kolom commentText saja, max 800 komentar
+  const raw = fs.readFileSync(filePath, 'utf-8');
+  const lines = raw.split('\n').filter(Boolean);
+  const header = lines[0].split(',');
+  const textIdx = header.findIndex(h => h.replace(/"/g, '').trim() === 'commentText');
+
+  const comments = lines.slice(1, 801)
+    .map(line => {
+      const cols = line.match(/("(?:[^"]|"")*"|[^,]*)/g) || [];
+      return (cols[textIdx] || '').replace(/^"|"$/g, '').replace(/""/g, '"').trim();
+    })
+    .filter(t => t.length > 0);
+
+  if (!comments.length) return res.status(400).json({ error: 'No comments found in file' });
+
+  const userContext = context?.trim()
+    ? `Konteks dari pengguna: ${context}\n\n`
+    : '';
+
+  const prompt = `${userContext}Berikut adalah komentar-komentar dari video TikTok kompetitor (${comments.length} komentar):
+
+---
+${comments.join('\n')}
+---
+
+Tolong lakukan dua hal:
+
+## 1. Generalisasi Topik
+Rangkum secara naratif topik-topik utama apa saja yang dibicarakan orang di komentar ini. Apa yang paling banyak dibahas? Apa yang orang tanyakan, keluhkan, atau puji?
+
+## 2. Celah & Peluang
+Berdasarkan pola komentar tersebut, identifikasi celah atau peluang apa yang bisa dimanfaatkan untuk mengembangkan produk atau bisnis baru. Tuliskan dalam bentuk narasi yang jelas dan actionable.
+
+Jawab dalam Bahasa Indonesia.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-6',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) return res.status(400).json({ error: data.error?.message || 'Claude API error' });
+
+    const result = data.content?.[0]?.text || '';
+    res.json({ result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Download
 app.get('/api/download', (req, res) => {
   const filename = req.query.file;
