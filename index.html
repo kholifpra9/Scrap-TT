@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TikTok Comment Scraper</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Clash+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --surface: #ede8df;
+    --card: #ffffff;
+    --border: #d4cfc6;
+    --ink: #1a1714;
+    --ink2: #4a4540;
+    --muted: #9a9590;
+    --accent: #e85d2f;
+    --accent2: #2f7de8;
+    --green: #2db87a;
+    --mono: 'DM Mono', monospace;
+    --display: 'Clash Display', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--display);
+    min-height: 100vh;
+  }
+
+  /* Grain texture */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px;
+  }
+
+  /* Header */
+  header {
+    margin-bottom: 48px;
+    animation: slideIn 0.5s ease both;
+  }
+
+  .badge {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 3px;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-size: clamp(32px, 6vw, 52px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -1.5px;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .sub {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 32px 0;
+  }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+    animation: slideIn 0.5s ease both;
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  /* Form */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 130px 160px;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+
+  label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+  }
+
+  input {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: var(--display);
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input:focus { border-color: var(--accent); }
+  input::placeholder { color: var(--muted); }
+
+  .btn-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+  .btn {
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    border-radius: 8px;
+    padding: 11px 22px;
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn:hover:not(:disabled) { background: var(--accent); transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn.outline {
+    background: transparent;
+    color: var(--ink);
+    border: 1.5px solid var(--border);
+  }
+  .btn.outline:hover:not(:disabled) { border-color: var(--ink); background: transparent; }
+
+  /* Status */
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+  .dot.running { background: var(--accent); animation: blink 0.8s infinite; }
+  .dot.done { background: var(--green); }
+  .dot.error { background: var(--accent); }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  /* Progress */
+  .progress-wrap {
+    margin-top: 16px;
+    display: none;
+  }
+  .progress-wrap.visible { display: block; }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--surface);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* Terminal */
+  .terminal {
+    background: var(--ink);
+    border-radius: 12px;
+    overflow: hidden;
+    display: none;
+    margin-bottom: 20px;
+    animation: slideIn 0.3s ease both;
+  }
+  .terminal.visible { display: block; }
+
+  .term-header {
+    background: #2a2520;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .term-body {
+    padding: 16px;
+    height: 240px;
+    overflow-y: auto;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    line-height: 1.9;
+    color: #c8c0b0;
+    scroll-behavior: smooth;
+  }
+
+  .term-body::-webkit-scrollbar { width: 3px; }
+  .term-body::-webkit-scrollbar-thumb { background: #3a3530; border-radius: 2px; }
+
+  .log { animation: logIn 0.15s ease; }
+  .log.hi { color: #e8d5a0; }
+  .log.ok { color: #6dda9e; }
+  .log.er { color: #e8705a; }
+
+  @keyframes logIn {
+    from { opacity: 0; transform: translateX(-6px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Result */
+  .result { display: none; }
+  .result.visible { display: block; }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .result-item {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+
+  .result-item .rl { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 4px; }
+  .result-item .rv { font-size: 22px; font-weight: 700; color: var(--ink); }
+  .result-item .rf { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 2px; word-break: break-all; }
+
+  .dl-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .btn-dl {
+    background: transparent;
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-dl:hover { background: var(--ink); color: var(--bg); }
+
+  /* History */
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .history-row {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+  }
+
+  .history-q { font-weight: 600; flex: 1; }
+  .history-meta { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .tag.done { background: #d4f5e5; color: #1a7a4a; }
+  .tag.running { background: #fde8e0; color: #c04020; }
+  .tag.error { background: #fde8e0; color: #c04020; }
+
+  .empty { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; padding: 24px; }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 640px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .result-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="badge">Comment Scraper</div>
+    <h1>TikTok<br><span>Comment</span> Harvester</h1>
+    <p class="sub">Scrape videos + all comments by keyword → dual CSV export</p>
+  </header>
+
+  <!-- Search Form -->
+  <div class="card" style="animation-delay:0.05s">
+    <div class="card-title">New Scrape Job</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Keyword</label>
+        <input type="text" id="queryInput" placeholder="e.g. bobocabin, iphone 17..." />
+      </div>
+      <div class="field">
+        <label>Max Videos</label>
+        <input type="number" id="videoCount" value="20" min="1" max="200" />
+      </div>
+      <div class="field">
+        <label>Max Comments/Video</label>
+        <input type="number" id="commentCount" value="500" min="10" max="9999" />
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="scrapeBtn" onclick="startScrape()">▶ Start Scraping</button>
+      <div class="status">
+        <div class="dot" id="statusDot"></div>
+        <span id="statusText">Ready</span>
+      </div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-label">
+        <span id="progressLabel">Collecting videos...</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+  </div>
+
+  <!-- Terminal -->
+  <div class="terminal" id="terminal">
+    <div class="term-header">
+      <div class="term-dot" style="background:#ff5f57"></div>
+      <div class="term-dot" style="background:#ffbd2e"></div>
+      <div class="term-dot" style="background:#28c840"></div>
+      <span style="margin-left:8px;font-family:var(--mono);font-size:10px;color:#6a6560">comment-scraper.log</span>
+    </div>
+    <div class="term-body" id="termBody"></div>
+  </div>
+
+  <!-- Result -->
+  <div class="result card" id="resultCard" style="animation-delay:0s">
+    <div class="card-title">Result</div>
+    <div class="result-grid" id="resultGrid"></div>
+    <div class="dl-row" id="dlRow"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- History -->
+  <div class="card-title" style="margin-bottom:12px; animation: slideIn 0.5s 0.2s ease both; opacity:0; animation-fill-mode:both;">Recent Jobs</div>
+  <div class="history-list" id="historyList">
+    <div class="empty">No jobs yet.</div>
+  </div>
+
+</div>
+
+<script>
+let ws = null;
+let clientId = null;
+let isRunning = false;
+const API = `${location.protocol}//${location.host}`;
+const WS_URL = `ws://${location.host}`;
+
+function connectWS() {
+  ws = new WebSocket(WS_URL);
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'connected') clientId = msg.clientId;
+    else if (msg.type === 'log') appendLog(msg.line);
+    else if (msg.type === 'done') onDone(msg);
+  };
+  ws.onclose = () => setTimeout(connectWS, 2000);
+}
+connectWS();
+
+function setStatus(state, text) {
+  document.getElementById('statusDot').className = 'dot ' + state;
+  document.getElementById('statusText').textContent = text;
+}
+
+function appendLog(line) {
+  const body = document.getElementById('termBody');
+  const div = document.createElement('div');
+  div.className = 'log';
+  if (line.includes('✅') || line.includes('DONE')) div.classList.add('ok');
+  else if (line.includes('❌') || line.includes('ERROR')) div.classList.add('er');
+  else if (line.includes('📦') || line.includes('💬') || line.includes('🔄') || line.includes('[')) div.classList.add('hi');
+  div.textContent = '› ' + line;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+
+  // Update progress bar from log
+  const videoMatch = line.match(/\[(\d+)\/(\d+)\]/);
+  if (videoMatch) {
+    const cur = parseInt(videoMatch[1]);
+    const total = parseInt(videoMatch[2]);
+    setProgress(cur, total, `Video ${cur}/${total} — scraping comments...`);
+  }
+  if (line.includes('videos found') || line.includes('videos captured')) {
+    const m = line.match(/(\d+) video/);
+    if (m) setProgress(0, parseInt(m[1]), `Found ${m[1]} videos, collecting...`);
+  }
+}
+
+function setProgress(cur, total, label) {
+  document.getElementById('progressWrap').classList.add('visible');
+  const pct = total > 0 ? Math.round((cur / total) * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressLabel').textContent = label;
+}
+
+async function startScrape() {
+  if (isRunning) return;
+  const query = document.getElementById('queryInput').value.trim();
+  const videoCount = parseInt(document.getElementById('videoCount').value) || 20;
+  const commentCount = parseInt(document.getElementById('commentCount').value) || 500;
+  if (!query) { document.getElementById('queryInput').focus(); return; }
+
+  isRunning = true;
+  document.getElementById('terminal').classList.add('visible');
+  document.getElementById('termBody').innerHTML = '';
+  document.getElementById('resultCard').classList.remove('visible');
+  document.getElementById('progressWrap').classList.remove('visible');
+  document.getElementById('scrapeBtn').disabled = true;
+  document.getElementById('scrapeBtn').textContent = '⏳ Running...';
+  setStatus('running', `Scraping "${query}"...`);
+  appendLog(`Job started: "${query}" | ${videoCount} videos | max ${commentCount} comments/video`);
+
+  try {
+    await fetch(`${API}/api/scrape-comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, videoCount, commentCount, clientId }),
+    });
+  } catch {
+    appendLog('❌ Cannot connect to server.');
+    setStatus('error', 'Connection failed');
+    resetBtn();
+  }
+}
+
+function onDone(msg) {
+  isRunning = false;
+  resetBtn();
+  setProgress(1, 1, 'Done!');
+
+  const card = document.getElementById('resultCard');
+  card.classList.add('visible');
+
+  if (msg.status === 'done') {
+    document.getElementById('resultGrid').innerHTML = `
+      <div class="result-item">
+        <div class="rl">Videos Scraped</div>
+        <div class="rv">${msg.videoCount || '—'}</div>
+        <div class="rf">${msg.videosCsv || ''}</div>
+      </div>
+      <div class="result-item">
+        <div class="rl">Total Comments</div>
+        <div class="rv">${msg.commentCount || '—'}</div>
+        <div class="rf">${msg.commentsCsv || ''}</div>
+      </div>
+    `;
+    document.getElementById('dlRow').innerHTML = `
+      ${msg.videosCsv ? `<button class="btn-dl" onclick="dl('${msg.videosCsv}')">📹 Download Videos CSV</button>` : ''}
+      ${msg.commentsCsv ? `<button class="btn-dl" onclick="dl('${msg.commentsCsv}')">💬 Download Comments CSV</button>` : ''}
+    `;
+    setStatus('done', `Done! ${msg.commentCount} comments collected`);
+  } else {
+    document.getElementById('resultGrid').innerHTML = `<div class="result-item"><div class="rl">Status</div><div class="rv" style="color:var(--accent)">Failed</div></div>`;
+    document.getElementById('dlRow').innerHTML = '';
+    setStatus('error', 'Scrape failed');
+  }
+
+  loadHistory();
+}
+
+function resetBtn() {
+  document.getElementById('scrapeBtn').disabled = false;
+  document.getElementById('scrapeBtn').textContent = '▶ Start Scraping';
+}
+
+function dl(filename) {
+  window.open(`${API}/api/download?file=${encodeURIComponent(filename)}`, '_blank');
+}
+
+async function loadHistory() {
+  try {
+    const res = await fetch(`${API}/api/jobs-comments`);
+    const jobs = await res.json();
+    const list = document.getElementById('historyList');
+    if (!jobs.length) { list.innerHTML = '<div class="empty">No jobs yet.</div>'; return; }
+    list.innerHTML = jobs.map(j => `
+      <div class="history-row">
+        <div class="history-q">🔍 ${j.query}</div>
+        <div class="history-meta">${j.videoCount}v · ${j.commentCount}c</div>
+        ${j.duration ? `<div class="history-meta">${j.duration}s</div>` : ''}
+        <span class="tag ${j.status}">${j.status}</span>
+        ${j.videosCsv ? `<button class="btn-dl" style="padding:5px 10px;font-size:11px" onclick="dl('${j.videosCsv}')">📹</button>` : ''}
+        ${j.commentsCsv ? `<button class="btn-dl" style="padding:5px 10px;font-size:11px" onclick="dl('${j.commentsCsv}')">💬</button>` : ''}
+      </div>
+    `).join('');
+  } catch {}
+}
+
+loadHistory();
+
+document.getElementById('queryInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') startScrape();
+});
+</script>
+</body>
+</html>
