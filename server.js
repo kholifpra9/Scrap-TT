@@ -98,7 +98,7 @@ app.get('/api/jobs-comments', (req, res) => {
   res.json(Array.from(commentJobs.values()).map(j => ({ id: j.id, query: j.query, videoCount: j.videoCountResult, commentCount: j.commentCountResult, status: j.status, videosCsv: j.videosCsv, commentsCsv: j.commentsCsv, duration: j.endTime ? ((j.endTime - j.startTime) / 1000).toFixed(1) : null })).reverse());
 });
 
-// AI Analyze
+// AI Analyze — menggunakan Google AI Studio (Gemini API)
 app.post('/api/analyze', async (req, res) => {
   const { apiKey, commentsCsv, context } = req.body;
   if (!apiKey || !commentsCsv) return res.status(400).json({ error: 'apiKey and commentsCsv required' });
@@ -142,24 +142,39 @@ Berdasarkan pola komentar tersebut, identifikasi celah atau peluang apa yang bis
 Jawab dalam Bahasa Indonesia.`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Gunakan model gemini-2.0-flash (gratis & cepat), bisa diganti ke gemini-1.5-pro dll
+    const model = 'gemini-2.0-flash';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-6',
-        max_tokens: 2000,
-        messages: [{ role: 'user', content: prompt }],
+        contents: [
+          {
+            parts: [{ text: prompt }],
+          },
+        ],
+        generationConfig: {
+          maxOutputTokens: 2000,
+          temperature: 0.7,
+        },
       }),
     });
 
     const data = await response.json();
-    if (!response.ok) return res.status(400).json({ error: data.error?.message || 'Claude API error' });
 
-    const result = data.content?.[0]?.text || '';
+    if (!response.ok) {
+      const errMsg = data.error?.message || 'Gemini API error';
+      return res.status(400).json({ error: errMsg });
+    }
+
+    // Ekstrak teks dari response Gemini
+    const result = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (!result) return res.status(500).json({ error: 'Gemini tidak mengembalikan hasil' });
+
     res.json({ result });
   } catch (err) {
     res.status(500).json({ error: err.message });

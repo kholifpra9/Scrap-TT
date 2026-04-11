@@ -368,8 +368,8 @@
 
       <div class="api-key-row">
         <div class="field">
-          <label>Anthropic API Key</label>
-          <input type="password" id="apiKeyInput" placeholder="sk-ant-..." />
+          <label>Google AI Studio API Key</label>
+          <input type="password" id="apiKeyInput" placeholder="AIza..." />
         </div>
         <button class="btn outline" onclick="saveApiKey()" style="white-space:nowrap;height:40px">Save Key</button>
       </div>
@@ -422,14 +422,14 @@ connectWS();
 
 // Load saved API key
 window.addEventListener('load', () => {
-  const saved = localStorage.getItem('anthropic_api_key');
+  const saved = localStorage.getItem('google_api_key');
   if (saved) document.getElementById('apiKeyInput').value = saved;
 });
 
 function saveApiKey() {
   const key = document.getElementById('apiKeyInput').value.trim();
   if (key) {
-    localStorage.setItem('anthropic_api_key', key);
+    localStorage.setItem('google_api_key', key);
     document.getElementById('apiKeyInput').placeholder = 'Key tersimpan ✓';
   }
 }
@@ -560,7 +560,7 @@ async function analyzeComments() {
   const context = document.getElementById('contextInput').value.trim();
 
   if (!apiKey) {
-    alert('Masukkan Anthropic API Key dulu ya.');
+    alert('Masukkan Google AI Studio API Key dulu ya.');
     document.getElementById('apiKeyInput').focus();
     return;
   }
