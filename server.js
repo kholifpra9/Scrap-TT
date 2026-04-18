@@ -104,31 +104,24 @@ function broadcast(clientId, data) {
   if (ws && ws.readyState === 1) ws.send(JSON.stringify(data));
 }
 
+const KEEP_FOLDERS = 5;
+
 function cleanOldFolders() {
-  const activeJobs = Array.from(commentJobs.values())
-    .sort((a, b) => b.startTime - a.startTime)
-    .slice(0, 5);
-
-  // path formatnya 'result/scrape_.../videos.csv' -> index 1 = nama folder
-  const activeFolders = new Set(
-    activeJobs
-      .flatMap(j => [j.videosCsv, j.commentsCsv])
-      .filter(Boolean)
-      .map(f => f.split('/')[1])
-  );
-
   if (!fs.existsSync(RESULT_DIR)) return;
-  const entries = fs.readdirSync(RESULT_DIR);
-  const scrapeFolders = entries.filter(f =>
-    f.startsWith('scrape_') &&
-    fs.statSync(path.join(RESULT_DIR, f)).isDirectory()
-  );
 
-  scrapeFolders.forEach(folder => {
-    if (!activeFolders.has(folder)) {
-      fs.rmSync(path.join(RESULT_DIR, folder), { recursive: true, force: true });
-      console.log(`🗑️ Deleted old folder: result/${folder}`);
-    }
+  // Baca langsung dari disk — tidak bergantung pada in-memory commentJobs
+  const scrapeFolders = fs.readdirSync(RESULT_DIR)
+    .filter(f =>
+      f.startsWith('scrape_') &&
+      fs.statSync(path.join(RESULT_DIR, f)).isDirectory()
+    )
+    .sort(); // nama folder mengandung timestamp, sort ascending = terlama duluan
+
+  // Hapus hanya jika sudah melebihi batas
+  const toDelete = scrapeFolders.slice(0, Math.max(0, scrapeFolders.length - KEEP_FOLDERS));
+  toDelete.forEach(folder => {
+    fs.rmSync(path.join(RESULT_DIR, folder), { recursive: true, force: true });
+    console.log(`🗑️ Deleted old folder: result/${folder}`);
   });
 }
 
@@ -203,9 +196,40 @@ app.post('/api/scrape-comments', (req, res) => {
   res.json({ jobId });
 });
 
+
 app.get('/api/jobs-comments', (req, res) => {
-  res.json(Array.from(commentJobs.values()).map(j => ({ id: j.id, query: j.query, videoCount: j.videoCountResult, commentCount: j.commentCountResult, status: j.status, videosCsv: j.videosCsv, commentsCsv: j.commentsCsv, duration: j.endTime ? ((j.endTime - j.startTime) / 1000).toFixed(1) : null })).reverse());
+  const resultDir = path.join(__dirname, 'result');
+
+  if (!fs.existsSync(resultDir)) {
+    return res.json([]);
+  }
+
+  const folders = fs.readdirSync(resultDir);
+
+  const jobs = folders.map(folder => {
+    const folderPath = path.join(resultDir, folder);
+
+    const files = fs.readdirSync(folderPath);
+
+    const videosCsv = files.find(f => f.includes('videos'));
+    const commentsCsv = files.find(f => f.includes('comments'));
+
+    return {
+      id: folder,
+      query: folder.replace('scrape_', '').split('_')[0],
+      videoCount: '-', // optional kalau mau parsing file
+      commentCount: '-',
+      status: 'done',
+      videosCsv: videosCsv ? `/result/${folder}/${videosCsv}` : null,
+      commentsCsv: commentsCsv ? `/result/${folder}/${commentsCsv}` : null,
+      duration: null
+    };
+  });
+
+  res.json(jobs.reverse());
 });
+
+app.use('/result', express.static(path.join(__dirname, 'result')));
 
 // Endpoint untuk cek apakah API key sudah terset di server
 app.get('/api/ai-status', (req, res) => {
