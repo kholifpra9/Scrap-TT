@@ -187,7 +187,6 @@ app.post('/api/scrape-comments', (req, res) => {
   proc.on('close', (code) => {
     job.status = code === 0 ? 'done' : 'error';
     job.endTime = Date.now();
-    cleanOldFolders();
     const safeQuery = query.replace(/[^a-zA-Z0-9]/g, '_');
     const allEntries = fs.existsSync(RESULT_DIR) ? fs.readdirSync(RESULT_DIR) : [];
     const scrapeFolder = allEntries

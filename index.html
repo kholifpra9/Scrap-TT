@@ -6,7 +6,6 @@
 <title>TikTok Comment Scraper</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Clash+Display:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  
   :root {
     --bg: #f5f0e8;
     --surface: #ede8df;
@@ -310,140 +309,175 @@
   @media (max-width: 640px) {
     .form-grid { grid-template-columns: 1fr; }
     .result-grid { grid-template-columns: 1fr; }
+    .api-key-row { flex-direction: column; }
   }
 
-  .toast {
-    position: fixed;
-    bottom: 28px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--ink);
-    color: var(--bg);
-    font-family: var(--mono);
-    font-size: 12px;
-    padding: 12px 20px;
-    border-radius: 8px;
-    opacity: 0;
-    transition: all 0.25s ease;
-    z-index: 9999;
-    white-space: nowrap;
-  }
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-  .btn-info {
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 1.5px solid var(--border);
-    background: var(--card);
-    color: var(--ink);
-    font-family: var(--mono);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    z-index: 100;
-    transition: all 0.15s;
-  }
-  .btn-info:hover { background: var(--ink); color: var(--bg); }
-
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-  .modal-overlay.visible { display: flex; }
-
-  .modal {
-    background: var(--card);
-    border: 1.5px solid var(--border);
-    border-radius: 20px;
-    padding: 32px;
-    max-width: 540px;
-    width: 100%;
-    max-height: 80vh;
-    overflow-y: auto;
-    animation: slideIn 0.25s ease;
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-  }
-
-  .modal-title {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: var(--muted);
-    line-height: 1;
-    padding: 4px;
-  }
-  .modal-close:hover { color: var(--ink); }
-
-  .modal-section {
-    margin-bottom: 20px;
-  }
-
-  .modal-section-title {
-    font-family: var(--mono);
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--muted);
-    margin-bottom: 8px;
-    display: flex;
+  /* Rate Limit Badge */
+  .rate-badge {
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-  }
-  .modal-section-title::before {
-    content: '';
-    display: inline-block;
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: var(--accent);
-  }
-
-  .modal-section p, .modal-section li {
-    font-size: 13px;
-    color: var(--ink2);
-    line-height: 1.7;
-  }
-
-  .modal-section ul {
-    padding-left: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .modal-tag {
-    display: inline-block;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
     font-family: var(--mono);
     font-size: 11px;
-    padding: 2px 7px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    transition: all 0.3s;
+  }
+  .rate-badge.ok   { border-color: var(--green); color: #1a7a4a; background: #edfaf4; }
+  .rate-badge.warn { border-color: #e8a02f; color: #8a5500; background: #fdf6e0; }
+  .rate-badge.empty{ border-color: var(--accent); color: var(--accent); background: #fdf0eb; }
+
+  .rate-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  .rate-limit-banner {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: #fdf0eb;
+    border: 1.5px solid var(--accent);
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    line-height: 1.5;
+  }
+  .rate-limit-banner.visible { display: flex; }
+
+  /* Error Modal */
+  .modal-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(26,23,20,0.6); backdrop-filter:blur(5px);
+    z-index:2000; align-items:center; justify-content:center; padding:24px;
+  }
+  .modal-overlay.visible { display:flex; animation:mFadeIn 0.2s ease; }
+  @keyframes mFadeIn { from{opacity:0} to{opacity:1} }
+  .modal-box {
+    background:var(--card); border:1.5px solid var(--border);
+    border-radius:20px; padding:32px 28px; max-width:460px; width:100%;
+    animation:mSlideIn 0.28s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes mSlideIn { from{opacity:0;transform:scale(0.88) translateY(16px)} to{opacity:1;transform:scale(1) translateY(0)} }
+  .modal-emoji { font-size:36px; margin-bottom:14px; line-height:1; }
+  .modal-title { font-size:18px; font-weight:700; letter-spacing:-0.5px; color:var(--ink); margin-bottom:8px; }
+  .modal-desc { font-family:var(--mono); font-size:12px; color:var(--ink2); line-height:1.7; margin-bottom:16px; }
+  .modal-tips-box {
+    background:var(--surface); border:1.5px solid var(--border);
+    border-radius:10px; padding:14px 16px; margin-bottom:22px;
+  }
+  .modal-tips-title { font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); margin-bottom:10px; }
+  .modal-tips-list { list-style:none; display:flex; flex-direction:column; gap:7px; }
+  .modal-tips-list li { font-family:var(--mono); font-size:12px; color:var(--ink2); display:flex; gap:8px; align-items:flex-start; line-height:1.5; }
+  .modal-tips-list li::before { content:'\u2192'; color:var(--accent); flex-shrink:0; }
+  .modal-raw {
+    background:var(--ink); color:#c8c0b0; border-radius:8px;
+    padding:10px 14px; font-family:var(--mono); font-size:10.5px;
+    line-height:1.6; margin-bottom:16px; word-break:break-word;
+    max-height:80px; overflow-y:auto;
+  }
+  .modal-footer { display:flex; justify-content:flex-end; gap:10px; }
+  .modal-btn-ok {
+    background:var(--ink); color:var(--bg); border:none;
+    border-radius:8px; padding:10px 24px; font-family:var(--display);
+    font-size:14px; font-weight:600; cursor:pointer; transition:all 0.15s;
+  }
+  .modal-btn-ok:hover { background:var(--accent); }
+  .modal-btn-link {
+    background:transparent; color:var(--accent2); border:1.5px solid var(--accent2);
+    border-radius:8px; padding:10px 18px; font-family:var(--display);
+    font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s;
+    text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+  }
+  .modal-btn-link:hover { background:var(--accent2); color:white; }
+
+  /* Tombol tanda tanya */
+  .help-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
     color: var(--ink2);
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-left: 10px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+  .help-btn:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  /* Modal Guide */
+  .guide-modal-box {
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: 20px; padding: 32px 28px;
+    max-width: 520px; width: 100%; max-height: 85vh; overflow-y: auto;
+    animation: mSlideIn 0.28s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .guide-modal-box::-webkit-scrollbar { width: 3px; }
+  .guide-modal-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .guide-modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
+  .guide-modal-title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: var(--ink); }
+  .guide-modal-sub { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .guide-close-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 18px; color: var(--muted); padding: 0 2px;
+    transition: color 0.15s; line-height: 1;
+  }
+  .guide-close-btn:hover { color: var(--ink); }
+
+  .guide-steps { display: flex; flex-direction: column; gap: 12px; margin-bottom: 22px; }
+  .guide-step { display: flex; align-items: flex-start; gap: 14px; }
+  .step-num {
+    width: 24px; height: 24px; flex-shrink: 0;
+    background: var(--ink); color: var(--bg);
+    border-radius: 50%; font-family: var(--mono); font-size: 10px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  .step-text { font-family: var(--mono); font-size: 12px; color: var(--ink2); line-height: 1.7; }
+  .step-text strong { color: var(--ink); font-family: var(--display); font-size: 13px; }
+
+  .guide-divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+  .guide-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .guide-info-item {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 13px 14px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .guide-info-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; line-height: 1; }
+  .guide-info-title { font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+  .guide-info-desc { font-family: var(--mono); font-size: 11px; color: var(--ink2); line-height: 1.6; }
+  .guide-info-desc strong { color: var(--ink); }
+
+  .guide-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .gchip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 11px; border-radius: 20px;
+    font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+    border: 1.5px solid var(--border); background: var(--surface); color: var(--ink2);
+  }
+  .gchip.red  { border-color: var(--accent);  color: var(--accent);  background: #fdf0eb; }
+  .gchip.grn  { border-color: var(--green);   color: #1a7a4a;        background: #edfaf4; }
+  .gchip.blu  { border-color: var(--accent2); color: var(--accent2); background: #eaf2fd; }
+
+  @media (max-width: 520px) {
+    .guide-info-grid { grid-template-columns: 1fr; }
+    .guide-modal-box { padding: 24px 18px; }
   }
 </style>
 </head>
@@ -453,8 +487,7 @@
   <header>
     <div class="badge">Comment Scraper</div>
     <h1>TikTok<br><span>Comment</span> Harvester</h1>
-    <p class="sub">Scrape videos + all comments by keyword → dual CSV export</p>
-    <button class="btn-info" onclick="openModal()">?</button>
+    <p class="sub">Scrape videos + all comments by keyword → dual CSV export + AI analysis &nbsp;<button class="help-btn" onclick="openGuide()" title="Cara Penggunaan">?</button></p>
   </header>
 
   <!-- Search Form -->
@@ -870,17 +903,54 @@ function resetBtn() {
   document.getElementById('scrapeBtn').textContent = '▶ Start Scraping';
 }
 
-async function dl(filename) {
-  try {
-    const res = await fetch(`${API}/api/download?file=${encodeURIComponent(filename)}`);
-    if (!res.ok) {
-      showToast('⚠️ File sudah dihapus otomatis. Silakan scrape ulang.');
-      return;
-    }
-    window.open(`${API}/api/download?file=${encodeURIComponent(filename)}`, '_blank');
-  } catch {
-    showToast('⚠️ Gagal menghubungi server.');
+function dl(filename) {
+  window.open(`${API}/api/download?file=${encodeURIComponent(filename)}`, '_blank');
+}
+
+async function analyzeComments() {
+  const context = document.getElementById('contextInput').value.trim();
+
+  if (!lastCommentsCsv) {
+    alert('Belum ada data komentar.');
+    return;
   }
+
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('aiLoading').classList.add('visible');
+  document.getElementById('aiResult').classList.remove('visible');
+  document.getElementById('aiResult').innerHTML = '';
+
+  try {
+    const res = await fetch(`${API}/api/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ commentsCsv: lastCommentsCsv, context }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Analyze failed');
+
+    const aiResult = document.getElementById('aiResult');
+    aiResult.innerHTML = formatAnalysis(data.result);
+    aiResult.classList.add('visible');
+  } catch (err) {
+    showErrModal(err.message);
+  } finally {
+    document.getElementById('analyzeBtn').disabled = false;
+    document.getElementById('aiLoading').classList.remove('visible');
+  }
+}
+
+function formatAnalysis(text) {
+  // Format markdown-ish output jadi HTML sederhana
+  return text
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/^/, '<p>')
+    .replace(/$/, '</p>');
 }
 
 async function loadHistory() {
@@ -1003,68 +1073,6 @@ checkRateLimit();
 document.getElementById('queryInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') startScrape();
 });
-
-function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3500);
-}
-
-function openModal() {
-  document.getElementById('modalOverlay').classList.add('visible');
-}
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('visible');
-}
-function closeModalOutside(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModal();
-}
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeModal();
-});
 </script>
-
-<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Panduan Pemakaian</div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-
-    <div class="modal-section">
-      <div class="modal-section-title">Cara Pakai</div>
-      <ul>
-        <li>Isi <strong>keyword</strong> pencarian TikTok</li>
-        <li>Set <strong>Max Videos</strong> — jumlah video yang akan di-scrape</li>
-        <li>Set <strong>Max Comments/Video</strong> — batas komentar per video</li>
-        <li>Klik <strong>Start Scraping</strong> dan tunggu hingga selesai</li>
-        <li>Download hasil via tombol <strong>Videos CSV</strong> atau <strong>Comments CSV</strong></li>
-      </ul>
-    </div>
-
-    <div class="modal-section">
-      <div class="modal-section-title">Komentar yang Tidak Diambil</div>
-      <p style="margin-bottom:8px">Komentar berikut otomatis difilter dan tidak masuk ke CSV:</p>
-      <ul>
-        <li>Hanya berisi emoji — <span class="modal-tag">😂😭🔥</span></li>
-        <li>Hanya berisi sticker TikTok — <span class="modal-tag">[sticker:haha]</span></li>
-        <li>Hanya berisi tag akun — <span class="modal-tag">@username</span></li>
-        <li>Kombinasi ketiganya tanpa kata/kalimat nyata</li>
-      </ul>
-    </div>
-
-    <div class="modal-section">
-      <div class="modal-section-title">Penyimpanan File</div>
-      <ul>
-        <li>Setiap scrape menghasilkan 1 folder berisi <span class="modal-tag">videos.csv</span> dan <span class="modal-tag">comments.csv</span></li>
-        <li>Sistem hanya menyimpan <strong>5 hasil scrape terakhir</strong></li>
-        <li>Folder lama otomatis dihapus saat ada scrape baru selesai</li>
-        <li>Segera download hasil scrape sebelum tertimpa job berikutnya</li>
-      </ul>
-    </div>
-  </div>
-</div>
-<div class="toast" id="toast"></div>
 </body>
 </html>
