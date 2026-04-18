@@ -219,8 +219,20 @@
   .analyze-section { display: none; margin-top: 4px; }
   .analyze-section.visible { display: block; }
 
-  .api-key-row { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 16px; }
-  .api-key-row .field { flex: 1; }
+  .ai-key-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+  }
+  .ai-key-status.ok { border-color: var(--green); color: #1a7a4a; }
+  .ai-key-status.missing { border-color: var(--accent); color: var(--accent); }
 
   .ai-result {
     background: var(--surface);
@@ -299,6 +311,174 @@
     .result-grid { grid-template-columns: 1fr; }
     .api-key-row { flex-direction: column; }
   }
+
+  /* Rate Limit Badge */
+  .rate-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    transition: all 0.3s;
+  }
+  .rate-badge.ok   { border-color: var(--green); color: #1a7a4a; background: #edfaf4; }
+  .rate-badge.warn { border-color: #e8a02f; color: #8a5500; background: #fdf6e0; }
+  .rate-badge.empty{ border-color: var(--accent); color: var(--accent); background: #fdf0eb; }
+
+  .rate-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  .rate-limit-banner {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: #fdf0eb;
+    border: 1.5px solid var(--accent);
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    line-height: 1.5;
+  }
+  .rate-limit-banner.visible { display: flex; }
+
+  /* Error Modal */
+  .modal-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(26,23,20,0.6); backdrop-filter:blur(5px);
+    z-index:2000; align-items:center; justify-content:center; padding:24px;
+  }
+  .modal-overlay.visible { display:flex; animation:mFadeIn 0.2s ease; }
+  @keyframes mFadeIn { from{opacity:0} to{opacity:1} }
+  .modal-box {
+    background:var(--card); border:1.5px solid var(--border);
+    border-radius:20px; padding:32px 28px; max-width:460px; width:100%;
+    animation:mSlideIn 0.28s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes mSlideIn { from{opacity:0;transform:scale(0.88) translateY(16px)} to{opacity:1;transform:scale(1) translateY(0)} }
+  .modal-emoji { font-size:36px; margin-bottom:14px; line-height:1; }
+  .modal-title { font-size:18px; font-weight:700; letter-spacing:-0.5px; color:var(--ink); margin-bottom:8px; }
+  .modal-desc { font-family:var(--mono); font-size:12px; color:var(--ink2); line-height:1.7; margin-bottom:16px; }
+  .modal-tips-box {
+    background:var(--surface); border:1.5px solid var(--border);
+    border-radius:10px; padding:14px 16px; margin-bottom:22px;
+  }
+  .modal-tips-title { font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); margin-bottom:10px; }
+  .modal-tips-list { list-style:none; display:flex; flex-direction:column; gap:7px; }
+  .modal-tips-list li { font-family:var(--mono); font-size:12px; color:var(--ink2); display:flex; gap:8px; align-items:flex-start; line-height:1.5; }
+  .modal-tips-list li::before { content:'\u2192'; color:var(--accent); flex-shrink:0; }
+  .modal-raw {
+    background:var(--ink); color:#c8c0b0; border-radius:8px;
+    padding:10px 14px; font-family:var(--mono); font-size:10.5px;
+    line-height:1.6; margin-bottom:16px; word-break:break-word;
+    max-height:80px; overflow-y:auto;
+  }
+  .modal-footer { display:flex; justify-content:flex-end; gap:10px; }
+  .modal-btn-ok {
+    background:var(--ink); color:var(--bg); border:none;
+    border-radius:8px; padding:10px 24px; font-family:var(--display);
+    font-size:14px; font-weight:600; cursor:pointer; transition:all 0.15s;
+  }
+  .modal-btn-ok:hover { background:var(--accent); }
+  .modal-btn-link {
+    background:transparent; color:var(--accent2); border:1.5px solid var(--accent2);
+    border-radius:8px; padding:10px 18px; font-family:var(--display);
+    font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s;
+    text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+  }
+  .modal-btn-link:hover { background:var(--accent2); color:white; }
+
+  /* Tombol tanda tanya */
+  .help-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    color: var(--ink2);
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-left: 10px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+  .help-btn:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  /* Modal Guide */
+  .guide-modal-box {
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: 20px; padding: 32px 28px;
+    max-width: 520px; width: 100%; max-height: 85vh; overflow-y: auto;
+    animation: mSlideIn 0.28s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .guide-modal-box::-webkit-scrollbar { width: 3px; }
+  .guide-modal-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .guide-modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
+  .guide-modal-title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: var(--ink); }
+  .guide-modal-sub { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .guide-close-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 18px; color: var(--muted); padding: 0 2px;
+    transition: color 0.15s; line-height: 1;
+  }
+  .guide-close-btn:hover { color: var(--ink); }
+
+  .guide-steps { display: flex; flex-direction: column; gap: 12px; margin-bottom: 22px; }
+  .guide-step { display: flex; align-items: flex-start; gap: 14px; }
+  .step-num {
+    width: 24px; height: 24px; flex-shrink: 0;
+    background: var(--ink); color: var(--bg);
+    border-radius: 50%; font-family: var(--mono); font-size: 10px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  .step-text { font-family: var(--mono); font-size: 12px; color: var(--ink2); line-height: 1.7; }
+  .step-text strong { color: var(--ink); font-family: var(--display); font-size: 13px; }
+
+  .guide-divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+  .guide-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .guide-info-item {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 13px 14px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .guide-info-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; line-height: 1; }
+  .guide-info-title { font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+  .guide-info-desc { font-family: var(--mono); font-size: 11px; color: var(--ink2); line-height: 1.6; }
+  .guide-info-desc strong { color: var(--ink); }
+
+  .guide-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .gchip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 11px; border-radius: 20px;
+    font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+    border: 1.5px solid var(--border); background: var(--surface); color: var(--ink2);
+  }
+  .gchip.red  { border-color: var(--accent);  color: var(--accent);  background: #fdf0eb; }
+  .gchip.grn  { border-color: var(--green);   color: #1a7a4a;        background: #edfaf4; }
+  .gchip.blu  { border-color: var(--accent2); color: var(--accent2); background: #eaf2fd; }
+
+  @media (max-width: 520px) {
+    .guide-info-grid { grid-template-columns: 1fr; }
+    .guide-modal-box { padding: 24px 18px; }
+  }
 </style>
 </head>
 <body>
@@ -307,7 +487,7 @@
   <header>
     <div class="badge">Comment Scraper</div>
     <h1>TikTok<br><span>Comment</span> Harvester</h1>
-    <p class="sub">Scrape videos + all comments by keyword → dual CSV export + AI analysis</p>
+    <p class="sub">Scrape videos + all comments by keyword → dual CSV export + AI analysis &nbsp;<button class="help-btn" onclick="openGuide()" title="Cara Penggunaan">?</button></p>
   </header>
 
   <!-- Search Form -->
@@ -316,7 +496,7 @@
     <div class="form-grid">
       <div class="field">
         <label>Keyword</label>
-        <input type="text" id="queryInput" placeholder="e.g. bobocabin, iphone 17..." />
+        <input type="text" id="queryInput" placeholder="e.g. Etawanesia, Susu Kambing" />
       </div>
       <div class="field">
         <label>Max Videos</label>
@@ -333,6 +513,15 @@
         <div class="dot" id="statusDot"></div>
         <span id="statusText">Ready</span>
       </div>
+      <span class="rate-badge" id="rateBadge" title="Sisa kuota scraping hari ini">
+        <span class="rate-dot"></span>
+        <span id="rateText">memuat...</span>
+      </span>
+    </div>
+
+    <!-- Banner muncul kalau kuota habis -->
+    <div class="rate-limit-banner" id="rateLimitBanner">
+      🚫 <span id="rateLimitMsg">Batas scraping harian tercapai.</span>
     </div>
 
     <div class="progress-wrap" id="progressWrap">
@@ -366,17 +555,14 @@
       <div class="divider" style="margin: 0 0 20px 0"></div>
       <div class="card-title">Analyze with AI</div>
 
-      <div class="api-key-row">
-        <div class="field">
-          <label>Google AI Studio API Key</label>
-          <input type="password" id="apiKeyInput" placeholder="AIza..." />
-        </div>
-        <button class="btn outline" onclick="saveApiKey()" style="white-space:nowrap;height:40px">Save Key</button>
+      <div class="ai-key-status" id="aiKeyStatus">
+        <div class="spinner"></div>
+        <span>Mengecek konfigurasi AI...</span>
       </div>
 
       <div class="field" style="margin-bottom: 14px">
-        <label>Konteks Bisnis Kamu</label>
-        <textarea id="contextInput" placeholder="Contoh: Saya sedang ingin mengembangkan produk herbal dan sedang melakukan social listening melalui komentar pada video kompetitor..."></textarea>
+        <label>Prompt Analisis</label>
+        <textarea id="contextInput" rows="5" placeholder="Tulis instruksi analisis kamu di sini. Contoh:&#10;&#10;Analisis komentar berikut dan temukan pain points yang paling sering muncul. Sajikan dalam poin-poin singkat lalu rekomendasikan ide konten yang bisa menjawab kebutuhan tersebut. Jawab dalam Bahasa Indonesia."></textarea>
       </div>
 
       <button class="btn ai" id="analyzeBtn" onclick="analyzeComments()">✦ Analyze Comments</button>
@@ -400,7 +586,110 @@
 
 </div>
 
+
+<!-- Guide Modal -->
+<div class="modal-overlay" id="guideModal" onclick="if(event.target===this)closeGuide()">
+  <div class="guide-modal-box">
+    <div class="guide-modal-header">
+      <div>
+        <div class="guide-modal-title">Cara Penggunaan</div>
+        <div class="guide-modal-sub">TikTok Comment Harvester &mdash; panduan singkat</div>
+      </div>
+      <button class="guide-close-btn" onclick="closeGuide()">&#10005;</button>
+    </div>
+
+    <div class="guide-steps">
+      <div class="guide-step">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>Isi Keyword</strong> &mdash; masukkan kata kunci produk, topik, atau hashtag TikTok. Contoh: <em>Etawanesia</em>, <em>#Herbal</em>, <em>susu etawa</em>.</div>
+      </div>
+      <div class="guide-step">
+        <div class="step-num">2</div>
+        <div class="step-text"><strong>Atur Jumlah</strong> &mdash; tentukan berapa banyak video (maks. 200) dan komentar per video (maks. 9999) yang ingin dikumpulkan.</div>
+      </div>
+      <div class="guide-step">
+        <div class="step-num">3</div>
+        <div class="step-text"><strong>Klik Start Scraping</strong> &mdash; proses berjalan di background, pantau lewat terminal log. Tunggu hingga status berubah jadi <em>Done</em>.</div>
+      </div>
+      <div class="guide-step">
+        <div class="step-num">4</div>
+        <div class="step-text"><strong>Download CSV</strong> &mdash; unduh <em>Videos CSV</em> dan <em>Comments CSV</em> setelah selesai. File hanya tersimpan sementara &mdash; segera download!</div>
+      </div>
+      <div class="guide-step">
+        <div class="step-num">5</div>
+        <div class="step-text"><strong>Analisis AI (opsional)</strong> &mdash; tulis prompt instruksi lalu klik <em>Analyze Comments</em> untuk insight otomatis dari Groq AI.</div>
+      </div>
+    </div>
+
+    <div class="guide-divider"></div>
+
+    <div class="guide-info-grid">
+      <div class="guide-info-item">
+        <div class="guide-info-icon">&#128260;</div>
+        <div>
+          <div class="guide-info-title">Kuota Harian</div>
+          <div class="guide-info-desc">Maks. <strong>3 kali</strong> scraping per hari. Reset setiap pukul <strong>08:00</strong>.</div>
+        </div>
+      </div>
+      <div class="guide-info-item">
+        <div class="guide-info-icon">&#127909;</div>
+        <div>
+          <div class="guide-info-title">Batas Video &amp; Komentar</div>
+          <div class="guide-info-desc">Maks. <strong>200 video</strong> per scrape, hingga <strong>9999</strong> komentar/video.</div>
+        </div>
+      </div>
+      <div class="guide-info-item">
+        <div class="guide-info-icon">&#10022;</div>
+        <div>
+          <div class="guide-info-title">Analisis AI</div>
+          <div class="guide-info-desc">Groq <strong>Llama 3.3 70B</strong>. Membaca maks. <strong>800 komentar</strong> pertama per sesi analisis.</div>
+        </div>
+      </div>
+      <div class="guide-info-item">
+        <div class="guide-info-icon">&#128190;</div>
+        <div>
+          <div class="guide-info-title">Penyimpanan</div>
+          <div class="guide-info-desc">Hanya <strong>3 job terakhir</strong> disimpan. Folder lama dihapus otomatis.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-divider"></div>
+
+    <div class="guide-chips">
+      <span class="gchip red">&#128683; 3x / hari</span>
+      <span class="gchip red">&#9200; Reset 08:00</span>
+      <span class="gchip">&#127909; Maks. 200 video</span>
+      <span class="gchip">&#128172; Maks. 9999 komen</span>
+      <span class="gchip grn">&#10022; AI: 800 komen</span>
+      <span class="gchip blu">&#128190; 3 job</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal-overlay" id="errModal" onclick="if(event.target===this)closeErrModal()">
+  <div class="modal-box">
+    <div class="modal-emoji" id="errEmoji">⚠️</div>
+    <div class="modal-title" id="errTitle">Terjadi Kesalahan</div>
+    <div class="modal-desc" id="errDesc"></div>
+    <div class="modal-raw" id="errRaw" style="display:none"></div>
+    <div class="modal-tips-box" id="errTipsBox" style="display:none">
+      <div class="modal-tips-title">Yang bisa kamu lakukan</div>
+      <ul class="modal-tips-list" id="errTipsList"></ul>
+    </div>
+    <div class="modal-footer" id="errFooter">
+      <button class="modal-btn-ok" onclick="closeErrModal()">Mengerti</button>
+    </div>
+  </div>
+</div>
+
 <script>
+
+function openGuide()  { document.getElementById('guideModal').classList.add('visible'); }
+function closeGuide() { document.getElementById('guideModal').classList.remove('visible'); }
+
 let ws = null;
 let clientId = null;
 let isRunning = false;
@@ -420,17 +709,62 @@ function connectWS() {
 }
 connectWS();
 
-// Load saved API key
-window.addEventListener('load', () => {
-  const saved = localStorage.getItem('google_api_key');
-  if (saved) document.getElementById('apiKeyInput').value = saved;
-});
+// ── Rate Limit ───────────────────────────────────────────────────
+async function checkRateLimit() {
+  try {
+    const res  = await fetch(`${API}/api/rate-limit-status`);
+    const data = await res.json();
+    updateRateBadge(data.remaining, data.limit, data.resetAt);
+  } catch {
+    document.getElementById('rateText').textContent = '?/? hari ini';
+  }
+}
 
-function saveApiKey() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  if (key) {
-    localStorage.setItem('google_api_key', key);
-    document.getElementById('apiKeyInput').placeholder = 'Key tersimpan ✓';
+function updateRateBadge(remaining, limit, resetAt) {
+  const badge  = document.getElementById('rateBadge');
+  const text   = document.getElementById('rateText');
+  const banner = document.getElementById('rateLimitBanner');
+  const btn    = document.getElementById('scrapeBtn');
+
+  text.textContent = `${remaining}/${limit} scrape tersisa`;
+
+  badge.className = 'rate-badge';
+  if (remaining === 0)       badge.classList.add('empty');
+  else if (remaining === 1)  badge.classList.add('warn');
+  else                       badge.classList.add('ok');
+
+  if (remaining === 0) {
+    const resetTime = resetAt
+      ? new Date(resetAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+      : '—';
+    document.getElementById('rateLimitMsg').textContent =
+      `Batas scraping harian tercapai (${limit}x/hari). Kuota reset jam ${resetTime}.`;
+    banner.classList.add('visible');
+    btn.disabled = true;
+  } else {
+    banner.classList.remove('visible');
+    if (!isRunning) btn.disabled = false;
+  }
+}
+// ─────────────────────────────────────────────────────────────────
+
+// Cek status API key dari server
+async function checkAiStatus() {
+  try {
+    const res = await fetch(`${API}/api/ai-status`);
+    const data = await res.json();
+    const el = document.getElementById('aiKeyStatus');
+    if (data.configured) {
+      el.className = 'ai-key-status ok';
+      el.innerHTML = '✅ &nbsp;Groq API Siap';
+    } else {
+      el.className = 'ai-key-status missing';
+      el.innerHTML = '⚠️ &nbsp;GROQ_API_KEY belum diset.';
+    }
+  } catch {
+    const el = document.getElementById('aiKeyStatus');
+    el.className = 'ai-key-status missing';
+    el.innerHTML = '⚠️ &nbsp;Tidak dapat terhubung ke server.';
   }
 }
 
@@ -475,7 +809,13 @@ async function startScrape() {
   const query = document.getElementById('queryInput').value.trim();
   const videoCount = parseInt(document.getElementById('videoCount').value) || 20;
   const commentCount = parseInt(document.getElementById('commentCount').value) || 500;
-  if (!query) { document.getElementById('queryInput').focus(); return; }
+  if (!query) {
+    document.getElementById('queryInput').focus();
+    document.getElementById('queryInput').style.borderColor = 'var(--accent)';
+    setTimeout(() => { document.getElementById('queryInput').style.borderColor = ''; }, 2000);
+    showErrModal('⚠️ Keyword tidak boleh kosong! Isi dulu keyword yang ingin di-scrape.');
+    return;
+  }
 
   isRunning = true;
   lastCommentsCsv = null;
@@ -492,11 +832,22 @@ async function startScrape() {
   appendLog(`Job started: "${query}" | ${videoCount} videos | max ${commentCount} comments/video`);
 
   try {
-    await fetch(`${API}/api/scrape-comments`, {
+    const resp = await fetch(`${API}/api/scrape-comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query, videoCount, commentCount, clientId }),
     });
+
+    // Handle rate limit exceeded (server-side block)
+    if (resp.status === 429) {
+      const data = await resp.json();
+      appendLog('❌ ' + (data.error || 'Batas scraping harian tercapai.'));
+      setStatus('error', 'Kuota habis');
+      updateRateBadge(0, parseInt(resp.headers.get('X-RateLimit-Limit') || '3'), data.resetAt);
+      resetBtn();
+      isRunning = false;
+      return;
+    }
   } catch {
     appendLog('❌ Cannot connect to server.');
     setStatus('error', 'Connection failed');
@@ -544,6 +895,7 @@ function onDone(msg) {
   }
 
   loadHistory();
+  checkRateLimit(); // refresh badge setelah scrape selesai
 }
 
 function resetBtn() {
@@ -556,14 +908,8 @@ function dl(filename) {
 }
 
 async function analyzeComments() {
-  const apiKey = document.getElementById('apiKeyInput').value.trim();
   const context = document.getElementById('contextInput').value.trim();
 
-  if (!apiKey) {
-    alert('Masukkan Google AI Studio API Key dulu ya.');
-    document.getElementById('apiKeyInput').focus();
-    return;
-  }
   if (!lastCommentsCsv) {
     alert('Belum ada data komentar.');
     return;
@@ -578,7 +924,7 @@ async function analyzeComments() {
     const res = await fetch(`${API}/api/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ apiKey, commentsCsv: lastCommentsCsv, context }),
+      body: JSON.stringify({ commentsCsv: lastCommentsCsv, context }),
     });
 
     const data = await res.json();
@@ -589,7 +935,7 @@ async function analyzeComments() {
     aiResult.innerHTML = formatAnalysis(data.result);
     aiResult.classList.add('visible');
   } catch (err) {
-    alert('Error: ' + err.message);
+    showErrModal(err.message);
   } finally {
     document.getElementById('analyzeBtn').disabled = false;
     document.getElementById('aiLoading').classList.remove('visible');
@@ -626,7 +972,103 @@ async function loadHistory() {
   } catch {}
 }
 
+
+// Error Modal
+function closeErrModal() {
+  document.getElementById('errModal').classList.remove('visible');
+}
+
+function showErrModal(msg) {
+  const isRateLimit = /rate limit|tpm|tokens per minute/i.test(msg);
+  const isTokenOver = /token.*(requested|context|exceed)/i.test(msg);
+  const isBadKey    = /api.?key|unauthorized|invalid_api/i.test(msg);
+  const isNoPrompt  = /prompt.*kosong|instruksi/i.test(msg);
+  const isEmptyKeyword = /keyword tidak boleh kosong/i.test(msg);
+
+  let emoji = '⚠️', title = 'Terjadi Kesalahan', desc = '', tips = [], showRaw = true, extraBtn = null;
+
+  if (isRateLimit) {
+    const secMatch = msg.match(/([\d.]+)s/);
+    const sec = secMatch ? Math.ceil(parseFloat(secMatch[1])) : 30;
+    const tpmMatch = msg.match(/Limit (\d+)/);
+    const tpm = tpmMatch ? parseInt(tpmMatch[1]).toLocaleString() : null;
+    emoji = '⏳';
+    title = 'Rate Limit Tercapai';
+    desc = 'Model Groq kelebihan beban karena komentar atau prompt terlalu panjang.'
+      + (tpm ? ' Limit: <strong>' + tpm + ' token/menit</strong>.' : '')
+      + '<br><br>Tunggu <strong>~' + sec + ' detik</strong> lalu coba lagi.';
+    tips = [
+      'Tunggu ' + sec + ' detik, lalu klik Analyze lagi',
+      'Persingkat prompt — fokus ke 1 pertanyaan saja',
+      'Gunakan sedikit komentar untuk analisis (300–400 komentar cukup untuk insight yang bagus)',
+      'Upgrade ke Groq Dev Tier untuk limit lebih tinggi',
+    ];
+    showRaw = false;
+    extraBtn = { label: 'Upgrade Groq Tier', url: 'https://console.groq.com/settings/billing' };
+  } else if (isTokenOver) {
+    emoji = '📊';
+    title = 'Token Melebihi Kapasitas';
+    desc = 'Total komentar + prompt melebihi batas maksimal token model.';
+    tips = [
+      'Persingkat prompt analisis',
+      'Kurangi komentar yang dianalisis.',
+      'Pecah analisis: 1 topik dulu, baru topik lain',
+    ];
+  } else if (isBadKey) {
+    emoji = '🔑';
+    title = 'API Key Bermasalah';
+    desc = 'GROQ_API_KEY tidak valid atau belum diset di file <strong>.env</strong>.';
+    tips = [
+      'Buka file .env di folder project',
+      'Pastikan ada baris: GROQ_API_KEY=gsk_...',
+      'Restart server setelah edit .env',
+    ];
+  } else if (isEmptyKeyword) {
+    emoji = '🔍';
+    title = 'Keyword Kosong';
+    desc = 'Kamu belum mengisi keyword pencarian. Masukkan keyword untuk mulai scraping.';
+    tips = [
+      'Isi kolom Keyword di atas, contoh: "Etawanesia" atau "Susu Etawa"',
+      'Bisa juga pakai hashtag, contoh: "#viral"',
+      'Gunakan kata yang spesifik untuk hasil lebih relevan',
+    ];
+    showRaw = false;
+  } else if (isNoPrompt) {
+    emoji = '✏️';
+    title = 'Prompt Kosong';
+    desc = 'Tulis instruksi analisis dulu sebelum klik Analyze.';
+    tips = [
+      'Isi kolom Prompt Analisis di atas tombol Analyze',
+      'Contoh: "Temukan pain points yang sering muncul"',
+    ];
+    showRaw = false;
+  }
+
+  document.getElementById('errEmoji').textContent = emoji;
+  document.getElementById('errTitle').textContent = title;
+  document.getElementById('errDesc').innerHTML = desc || msg;
+
+  const rawEl = document.getElementById('errRaw');
+  if (showRaw && msg.length > 40) { rawEl.textContent = msg; rawEl.style.display = 'block'; }
+  else { rawEl.style.display = 'none'; }
+
+  const tipsBox = document.getElementById('errTipsBox');
+  if (tips.length) {
+    document.getElementById('errTipsList').innerHTML = tips.map(t => '<li>' + t + '</li>').join('');
+    tipsBox.style.display = 'block';
+  } else { tipsBox.style.display = 'none'; }
+
+  const footer = document.getElementById('errFooter');
+  footer.innerHTML = '';
+  if (extraBtn) footer.innerHTML += '<a class="modal-btn-link" href="' + extraBtn.url + '" target="_blank">↗ ' + extraBtn.label + '</a>';
+  footer.innerHTML += '<button class="modal-btn-ok" onclick="closeErrModal()">Mengerti</button>';
+
+  document.getElementById('errModal').classList.add('visible');
+}
+
 loadHistory();
+checkAiStatus();
+checkRateLimit();
 
 document.getElementById('queryInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') startScrape();

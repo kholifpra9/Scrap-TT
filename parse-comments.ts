@@ -12,7 +12,9 @@ const maxVideos = process.argv[3] ? parseInt(process.argv[3]) : 20;
 const maxCommentsPerVideo = process.argv[4] ? parseInt(process.argv[4]) : 500;
 
 // Buat folder output dengan nama keyword + timestamp
-const outputDir = path.dirname(new URL(import.meta.url).pathname).replace(/^\/([A-Z]:)/, '$1');
+// OUTPUT_DIR di-set oleh server.js → result/, fallback ke direktori script
+const scriptDir = path.dirname(new URL(import.meta.url).pathname).replace(/^\/([A-Z]:)/, '$1');
+const outputDir = process.env.OUTPUT_DIR || scriptDir;
 const safeQuery = searchQuery.replace(/[^a-zA-Z0-9]/g, '_');
 const folderName = `scrape_${safeQuery}_${Date.now()}`;
 const outputFolder = path.join(outputDir, folderName);
