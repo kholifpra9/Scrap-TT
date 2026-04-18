@@ -31,7 +31,6 @@
     min-height: 100vh;
   }
 
-  /* Grain texture */
   body::after {
     content: '';
     position: fixed;
@@ -41,17 +40,9 @@
     z-index: 999;
   }
 
-  .container {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 48px 24px;
-  }
+  .container { max-width: 860px; margin: 0 auto; padding: 48px 24px; }
 
-  /* Header */
-  header {
-    margin-bottom: 48px;
-    animation: slideIn 0.5s ease both;
-  }
+  header { margin-bottom: 48px; animation: slideIn 0.5s ease both; }
 
   .badge {
     display: inline-block;
@@ -67,32 +58,13 @@
     margin-bottom: 16px;
   }
 
-  h1 {
-    font-size: clamp(32px, 6vw, 52px);
-    font-weight: 700;
-    line-height: 1.05;
-    letter-spacing: -1.5px;
-    color: var(--ink);
-    margin-bottom: 10px;
-  }
-
+  h1 { font-size: clamp(32px, 6vw, 52px); font-weight: 700; line-height: 1.05; letter-spacing: -1.5px; color: var(--ink); margin-bottom: 10px; }
   h1 span { color: var(--accent); }
 
-  .sub {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-    letter-spacing: 0.5px;
-  }
+  .sub { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 0.5px; }
 
-  /* Divider */
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 32px 0;
-  }
+  .divider { height: 1px; background: var(--border); margin: 32px 0; }
 
-  /* Card */
   .card {
     background: var(--card);
     border: 1.5px solid var(--border);
@@ -122,25 +94,12 @@
     background: var(--accent);
   }
 
-  /* Form */
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 130px 160px;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
+  .form-grid { display: grid; grid-template-columns: 1fr 130px 160px; gap: 12px; margin-bottom: 16px; }
   .field { display: flex; flex-direction: column; gap: 5px; }
 
-  label {
-    font-family: var(--mono);
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--muted);
-  }
+  label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); }
 
-  input {
+  input, textarea {
     background: var(--surface);
     border: 1.5px solid var(--border);
     border-radius: 8px;
@@ -152,8 +111,9 @@
     transition: border-color 0.15s;
   }
 
-  input:focus { border-color: var(--accent); }
-  input::placeholder { color: var(--muted); }
+  textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
 
   .btn-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 
@@ -175,88 +135,35 @@
   .btn:active { transform: translateY(0); }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-  .btn.outline {
-    background: transparent;
-    color: var(--ink);
-    border: 1.5px solid var(--border);
-  }
+  .btn.outline { background: transparent; color: var(--ink); border: 1.5px solid var(--border); }
   .btn.outline:hover:not(:disabled) { border-color: var(--ink); background: transparent; }
 
-  /* Status */
-  .status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
+  .btn.ai {
+    background: var(--accent2);
+    color: white;
   }
+  .btn.ai:hover:not(:disabled) { background: #1a60c8; }
 
-  .dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--muted);
-    flex-shrink: 0;
-  }
+  .status { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
   .dot.running { background: var(--accent); animation: blink 0.8s infinite; }
   .dot.done { background: var(--green); }
   .dot.error { background: var(--accent); }
 
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.2; }
-  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
-  /* Progress */
-  .progress-wrap {
-    margin-top: 16px;
-    display: none;
-  }
+  .progress-wrap { margin-top: 16px; display: none; }
   .progress-wrap.visible { display: block; }
 
-  .progress-label {
-    display: flex;
-    justify-content: space-between;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
+  .progress-label { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .progress-bar { height: 4px; background: var(--surface); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; width: 0%; }
 
-  .progress-bar {
-    height: 4px;
-    background: var(--surface);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 2px;
-    transition: width 0.4s ease;
-    width: 0%;
-  }
-
-  /* Terminal */
-  .terminal {
-    background: var(--ink);
-    border-radius: 12px;
-    overflow: hidden;
-    display: none;
-    margin-bottom: 20px;
-    animation: slideIn 0.3s ease both;
-  }
+  .terminal { background: var(--ink); border-radius: 12px; overflow: hidden; display: none; margin-bottom: 20px; animation: slideIn 0.3s ease both; }
   .terminal.visible { display: block; }
 
-  .term-header {
-    background: #2a2520;
-    padding: 10px 16px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
+  .term-header { background: #2a2520; padding: 10px 16px; display: flex; align-items: center; gap: 6px; }
   .term-dot { width: 10px; height: 10px; border-radius: 50%; }
 
   .term-body {
@@ -278,34 +185,19 @@
   .log.ok { color: #6dda9e; }
   .log.er { color: #e8705a; }
 
-  @keyframes logIn {
-    from { opacity: 0; transform: translateX(-6px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
+  @keyframes logIn { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
 
-  /* Result */
   .result { display: none; }
   .result.visible { display: block; }
 
-  .result-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 16px;
-  }
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
 
-  .result-item {
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 18px;
-  }
-
+  .result-item { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 16px 18px; }
   .result-item .rl { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 4px; }
   .result-item .rv { font-size: 22px; font-weight: 700; color: var(--ink); }
   .result-item .rf { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 2px; word-break: break-all; }
 
-  .dl-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .dl-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
 
   .btn-dl {
     background: transparent;
@@ -322,8 +214,72 @@
     align-items: center;
     gap: 6px;
   }
-
   .btn-dl:hover { background: var(--ink); color: var(--bg); }
+
+  /* AI Analysis */
+  .analyze-section { display: none; margin-top: 4px; }
+  .analyze-section.visible { display: block; }
+
+  .ai-key-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+  }
+  .ai-key-status.ok { border-color: var(--green); color: #1a7a4a; }
+  .ai-key-status.missing { border-color: var(--accent); color: var(--accent); }
+
+  .ai-result {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 16px;
+    display: none;
+    line-height: 1.8;
+    font-size: 14px;
+    color: var(--ink2);
+  }
+  .ai-result.visible { display: block; }
+
+  .ai-result h3 {
+    font-size: 13px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    margin-top: 20px;
+  }
+  .ai-result h3:first-child { margin-top: 0; }
+
+  .ai-result p { margin-bottom: 10px; }
+
+  .ai-loading {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 12px;
+  }
+  .ai-loading.visible { display: flex; }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent2);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   /* History */
   .history-list { display: flex; flex-direction: column; gap: 8px; }
@@ -342,25 +298,14 @@
   .history-q { font-weight: 600; flex: 1; }
   .history-meta { font-family: var(--mono); font-size: 11px; color: var(--muted); }
 
-  .tag {
-    font-family: var(--mono);
-    font-size: 9px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 3px 8px;
-    border-radius: 4px;
-  }
+  .tag { font-family: var(--mono); font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; }
   .tag.done { background: #d4f5e5; color: #1a7a4a; }
   .tag.running { background: #fde8e0; color: #c04020; }
   .tag.error { background: #fde8e0; color: #c04020; }
 
   .empty { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; padding: 24px; }
 
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
   @media (max-width: 640px) {
     .form-grid { grid-template-columns: 1fr; }
@@ -518,7 +463,7 @@
     <div class="form-grid">
       <div class="field">
         <label>Keyword</label>
-        <input type="text" id="queryInput" placeholder="e.g. bobocabin, iphone 17..." />
+        <input type="text" id="queryInput" placeholder="e.g. Etawanesia, Susu Kambing" />
       </div>
       <div class="field">
         <label>Max Videos</label>
@@ -535,6 +480,15 @@
         <div class="dot" id="statusDot"></div>
         <span id="statusText">Ready</span>
       </div>
+      <span class="rate-badge" id="rateBadge" title="Sisa kuota scraping hari ini">
+        <span class="rate-dot"></span>
+        <span id="rateText">memuat...</span>
+      </span>
+    </div>
+
+    <!-- Banner muncul kalau kuota habis -->
+    <div class="rate-limit-banner" id="rateLimitBanner">
+      🚫 <span id="rateLimitMsg">Batas scraping harian tercapai.</span>
     </div>
 
     <div class="progress-wrap" id="progressWrap">
@@ -562,6 +516,31 @@
     <div class="card-title">Result</div>
     <div class="result-grid" id="resultGrid"></div>
     <div class="dl-row" id="dlRow"></div>
+
+    <!-- AI Analysis Section -->
+    <div class="analyze-section" id="analyzeSection">
+      <div class="divider" style="margin: 0 0 20px 0"></div>
+      <div class="card-title">Analyze with AI</div>
+
+      <div class="ai-key-status" id="aiKeyStatus">
+        <div class="spinner"></div>
+        <span>Mengecek konfigurasi AI...</span>
+      </div>
+
+      <div class="field" style="margin-bottom: 14px">
+        <label>Prompt Analisis</label>
+        <textarea id="contextInput" rows="5" placeholder="Tulis instruksi analisis kamu di sini. Contoh:&#10;&#10;Analisis komentar berikut dan temukan pain points yang paling sering muncul. Sajikan dalam poin-poin singkat lalu rekomendasikan ide konten yang bisa menjawab kebutuhan tersebut. Jawab dalam Bahasa Indonesia."></textarea>
+      </div>
+
+      <button class="btn ai" id="analyzeBtn" onclick="analyzeComments()">✦ Analyze Comments</button>
+
+      <div class="ai-loading" id="aiLoading">
+        <div class="spinner"></div>
+        <span>Menganalisis komentar...</span>
+      </div>
+
+      <div class="ai-result" id="aiResult"></div>
+    </div>
   </div>
 
   <div class="divider"></div>
@@ -574,10 +553,114 @@
 
 </div>
 
+
+<!-- Guide Modal -->
+<div class="modal-overlay" id="guideModal" onclick="if(event.target===this)closeGuide()">
+  <div class="guide-modal-box">
+    <div class="guide-modal-header">
+      <div>
+        <div class="guide-modal-title">Cara Penggunaan</div>
+        <div class="guide-modal-sub">TikTok Comment Harvester &mdash; panduan singkat</div>
+      </div>
+      <button class="guide-close-btn" onclick="closeGuide()">&#10005;</button>
+    </div>
+
+    <div class="guide-steps">
+      <div class="guide-step">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>Isi Keyword</strong> &mdash; masukkan kata kunci produk, topik, atau hashtag TikTok. Contoh: <em>Etawanesia</em>, <em>#Herbal</em>, <em>susu etawa</em>.</div>
+      </div>
+      <div class="guide-step">
+        <div class="step-num">2</div>
+        <div class="step-text"><strong>Atur Jumlah</strong> &mdash; tentukan berapa banyak video (maks. 200) dan komentar per video (maks. 9999) yang ingin dikumpulkan.</div>
+      </div>
+      <div class="guide-step">
+        <div class="step-num">3</div>
+        <div class="step-text"><strong>Klik Start Scraping</strong> &mdash; proses berjalan di background, pantau lewat terminal log. Tunggu hingga status berubah jadi <em>Done</em>.</div>
+      </div>
+      <div class="guide-step">
+        <div class="step-num">4</div>
+        <div class="step-text"><strong>Download CSV</strong> &mdash; unduh <em>Videos CSV</em> dan <em>Comments CSV</em> setelah selesai. File hanya tersimpan sementara &mdash; segera download!</div>
+      </div>
+      <div class="guide-step">
+        <div class="step-num">5</div>
+        <div class="step-text"><strong>Analisis AI (opsional)</strong> &mdash; tulis prompt instruksi lalu klik <em>Analyze Comments</em> untuk insight otomatis dari Groq AI.</div>
+      </div>
+    </div>
+
+    <div class="guide-divider"></div>
+
+    <div class="guide-info-grid">
+      <div class="guide-info-item">
+        <div class="guide-info-icon">&#128260;</div>
+        <div>
+          <div class="guide-info-title">Kuota Harian</div>
+          <div class="guide-info-desc">Maks. <strong>3 kali</strong> scraping per hari. Reset setiap pukul <strong>08:00</strong>.</div>
+        </div>
+      </div>
+      <div class="guide-info-item">
+        <div class="guide-info-icon">&#127909;</div>
+        <div>
+          <div class="guide-info-title">Batas Video &amp; Komentar</div>
+          <div class="guide-info-desc">Maks. <strong>200 video</strong> per scrape, hingga <strong>9999</strong> komentar/video.</div>
+        </div>
+      </div>
+      <div class="guide-info-item">
+        <div class="guide-info-icon">&#10022;</div>
+        <div>
+          <div class="guide-info-title">Analisis AI</div>
+          <div class="guide-info-desc">Groq <strong>Llama 3.3 70B</strong>. Membaca maks. <strong>800 komentar</strong> pertama per sesi analisis.</div>
+        </div>
+      </div>
+      <div class="guide-info-item">
+        <div class="guide-info-icon">&#128190;</div>
+        <div>
+          <div class="guide-info-title">Penyimpanan</div>
+          <div class="guide-info-desc">Hanya <strong>3 job terakhir</strong> disimpan. Folder lama dihapus otomatis.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-divider"></div>
+
+    <div class="guide-chips">
+      <span class="gchip red">&#128683; 3x / hari</span>
+      <span class="gchip red">&#9200; Reset 08:00</span>
+      <span class="gchip">&#127909; Maks. 200 video</span>
+      <span class="gchip">&#128172; Maks. 9999 komen</span>
+      <span class="gchip grn">&#10022; AI: 800 komen</span>
+      <span class="gchip blu">&#128190; 3 job</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal-overlay" id="errModal" onclick="if(event.target===this)closeErrModal()">
+  <div class="modal-box">
+    <div class="modal-emoji" id="errEmoji">⚠️</div>
+    <div class="modal-title" id="errTitle">Terjadi Kesalahan</div>
+    <div class="modal-desc" id="errDesc"></div>
+    <div class="modal-raw" id="errRaw" style="display:none"></div>
+    <div class="modal-tips-box" id="errTipsBox" style="display:none">
+      <div class="modal-tips-title">Yang bisa kamu lakukan</div>
+      <ul class="modal-tips-list" id="errTipsList"></ul>
+    </div>
+    <div class="modal-footer" id="errFooter">
+      <button class="modal-btn-ok" onclick="closeErrModal()">Mengerti</button>
+    </div>
+  </div>
+</div>
+
 <script>
+
+function openGuide()  { document.getElementById('guideModal').classList.add('visible'); }
+function closeGuide() { document.getElementById('guideModal').classList.remove('visible'); }
+
 let ws = null;
 let clientId = null;
 let isRunning = false;
+let lastCommentsCsv = null;
 const API = `${location.protocol}//${location.host}`;
 const WS_URL = `ws://${location.host}`;
 
@@ -592,6 +675,65 @@ function connectWS() {
   ws.onclose = () => setTimeout(connectWS, 2000);
 }
 connectWS();
+
+// ── Rate Limit ───────────────────────────────────────────────────
+async function checkRateLimit() {
+  try {
+    const res  = await fetch(`${API}/api/rate-limit-status`);
+    const data = await res.json();
+    updateRateBadge(data.remaining, data.limit, data.resetAt);
+  } catch {
+    document.getElementById('rateText').textContent = '?/? hari ini';
+  }
+}
+
+function updateRateBadge(remaining, limit, resetAt) {
+  const badge  = document.getElementById('rateBadge');
+  const text   = document.getElementById('rateText');
+  const banner = document.getElementById('rateLimitBanner');
+  const btn    = document.getElementById('scrapeBtn');
+
+  text.textContent = `${remaining}/${limit} scrape tersisa`;
+
+  badge.className = 'rate-badge';
+  if (remaining === 0)       badge.classList.add('empty');
+  else if (remaining === 1)  badge.classList.add('warn');
+  else                       badge.classList.add('ok');
+
+  if (remaining === 0) {
+    const resetTime = resetAt
+      ? new Date(resetAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+      : '—';
+    document.getElementById('rateLimitMsg').textContent =
+      `Batas scraping harian tercapai (${limit}x/hari). Kuota reset jam ${resetTime}.`;
+    banner.classList.add('visible');
+    btn.disabled = true;
+  } else {
+    banner.classList.remove('visible');
+    if (!isRunning) btn.disabled = false;
+  }
+}
+// ─────────────────────────────────────────────────────────────────
+
+// Cek status API key dari server
+async function checkAiStatus() {
+  try {
+    const res = await fetch(`${API}/api/ai-status`);
+    const data = await res.json();
+    const el = document.getElementById('aiKeyStatus');
+    if (data.configured) {
+      el.className = 'ai-key-status ok';
+      el.innerHTML = '✅ &nbsp;Groq API Siap';
+    } else {
+      el.className = 'ai-key-status missing';
+      el.innerHTML = '⚠️ &nbsp;GROQ_API_KEY belum diset.';
+    }
+  } catch {
+    const el = document.getElementById('aiKeyStatus');
+    el.className = 'ai-key-status missing';
+    el.innerHTML = '⚠️ &nbsp;Tidak dapat terhubung ke server.';
+  }
+}
 
 function setStatus(state, text) {
   document.getElementById('statusDot').className = 'dot ' + state;
@@ -609,7 +751,6 @@ function appendLog(line) {
   body.appendChild(div);
   body.scrollTop = body.scrollHeight;
 
-  // Update progress bar from log
   const videoMatch = line.match(/\[(\d+)\/(\d+)\]/);
   if (videoMatch) {
     const cur = parseInt(videoMatch[1]);
@@ -635,12 +776,22 @@ async function startScrape() {
   const query = document.getElementById('queryInput').value.trim();
   const videoCount = parseInt(document.getElementById('videoCount').value) || 20;
   const commentCount = parseInt(document.getElementById('commentCount').value) || 500;
-  if (!query) { document.getElementById('queryInput').focus(); return; }
+  if (!query) {
+    document.getElementById('queryInput').focus();
+    document.getElementById('queryInput').style.borderColor = 'var(--accent)';
+    setTimeout(() => { document.getElementById('queryInput').style.borderColor = ''; }, 2000);
+    showErrModal('⚠️ Keyword tidak boleh kosong! Isi dulu keyword yang ingin di-scrape.');
+    return;
+  }
 
   isRunning = true;
+  lastCommentsCsv = null;
   document.getElementById('terminal').classList.add('visible');
   document.getElementById('termBody').innerHTML = '';
   document.getElementById('resultCard').classList.remove('visible');
+  document.getElementById('analyzeSection').classList.remove('visible');
+  document.getElementById('aiResult').classList.remove('visible');
+  document.getElementById('aiResult').innerHTML = '';
   document.getElementById('progressWrap').classList.remove('visible');
   document.getElementById('scrapeBtn').disabled = true;
   document.getElementById('scrapeBtn').textContent = '⏳ Running...';
@@ -648,11 +799,22 @@ async function startScrape() {
   appendLog(`Job started: "${query}" | ${videoCount} videos | max ${commentCount} comments/video`);
 
   try {
-    await fetch(`${API}/api/scrape-comments`, {
+    const resp = await fetch(`${API}/api/scrape-comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query, videoCount, commentCount, clientId }),
     });
+
+    // Handle rate limit exceeded (server-side block)
+    if (resp.status === 429) {
+      const data = await resp.json();
+      appendLog('❌ ' + (data.error || 'Batas scraping harian tercapai.'));
+      setStatus('error', 'Kuota habis');
+      updateRateBadge(0, parseInt(resp.headers.get('X-RateLimit-Limit') || '3'), data.resetAt);
+      resetBtn();
+      isRunning = false;
+      return;
+    }
   } catch {
     appendLog('❌ Cannot connect to server.');
     setStatus('error', 'Connection failed');
@@ -669,6 +831,8 @@ function onDone(msg) {
   card.classList.add('visible');
 
   if (msg.status === 'done') {
+    lastCommentsCsv = msg.commentsCsv || null;
+
     document.getElementById('resultGrid').innerHTML = `
       <div class="result-item">
         <div class="rl">Videos Scraped</div>
@@ -686,6 +850,11 @@ function onDone(msg) {
       ${msg.commentsCsv ? `<button class="btn-dl" onclick="dl('${msg.commentsCsv}')">💬 Download Comments CSV</button>` : ''}
     `;
     setStatus('done', `Done! ${msg.commentCount} comments collected`);
+
+    // Tampilkan section AI
+    if (lastCommentsCsv) {
+      document.getElementById('analyzeSection').classList.add('visible');
+    }
   } else {
     document.getElementById('resultGrid').innerHTML = `<div class="result-item"><div class="rl">Status</div><div class="rv" style="color:var(--accent)">Failed</div></div>`;
     document.getElementById('dlRow').innerHTML = '';
@@ -693,6 +862,7 @@ function onDone(msg) {
   }
 
   loadHistory();
+  checkRateLimit(); // refresh badge setelah scrape selesai
 }
 
 function resetBtn() {
@@ -732,7 +902,103 @@ async function loadHistory() {
   } catch {}
 }
 
+
+// Error Modal
+function closeErrModal() {
+  document.getElementById('errModal').classList.remove('visible');
+}
+
+function showErrModal(msg) {
+  const isRateLimit = /rate limit|tpm|tokens per minute/i.test(msg);
+  const isTokenOver = /token.*(requested|context|exceed)/i.test(msg);
+  const isBadKey    = /api.?key|unauthorized|invalid_api/i.test(msg);
+  const isNoPrompt  = /prompt.*kosong|instruksi/i.test(msg);
+  const isEmptyKeyword = /keyword tidak boleh kosong/i.test(msg);
+
+  let emoji = '⚠️', title = 'Terjadi Kesalahan', desc = '', tips = [], showRaw = true, extraBtn = null;
+
+  if (isRateLimit) {
+    const secMatch = msg.match(/([\d.]+)s/);
+    const sec = secMatch ? Math.ceil(parseFloat(secMatch[1])) : 30;
+    const tpmMatch = msg.match(/Limit (\d+)/);
+    const tpm = tpmMatch ? parseInt(tpmMatch[1]).toLocaleString() : null;
+    emoji = '⏳';
+    title = 'Rate Limit Tercapai';
+    desc = 'Model Groq kelebihan beban karena komentar atau prompt terlalu panjang.'
+      + (tpm ? ' Limit: <strong>' + tpm + ' token/menit</strong>.' : '')
+      + '<br><br>Tunggu <strong>~' + sec + ' detik</strong> lalu coba lagi.';
+    tips = [
+      'Tunggu ' + sec + ' detik, lalu klik Analyze lagi',
+      'Persingkat prompt — fokus ke 1 pertanyaan saja',
+      'Gunakan sedikit komentar untuk analisis (300–400 komentar cukup untuk insight yang bagus)',
+      'Upgrade ke Groq Dev Tier untuk limit lebih tinggi',
+    ];
+    showRaw = false;
+    extraBtn = { label: 'Upgrade Groq Tier', url: 'https://console.groq.com/settings/billing' };
+  } else if (isTokenOver) {
+    emoji = '📊';
+    title = 'Token Melebihi Kapasitas';
+    desc = 'Total komentar + prompt melebihi batas maksimal token model.';
+    tips = [
+      'Persingkat prompt analisis',
+      'Kurangi komentar yang dianalisis.',
+      'Pecah analisis: 1 topik dulu, baru topik lain',
+    ];
+  } else if (isBadKey) {
+    emoji = '🔑';
+    title = 'API Key Bermasalah';
+    desc = 'GROQ_API_KEY tidak valid atau belum diset di file <strong>.env</strong>.';
+    tips = [
+      'Buka file .env di folder project',
+      'Pastikan ada baris: GROQ_API_KEY=gsk_...',
+      'Restart server setelah edit .env',
+    ];
+  } else if (isEmptyKeyword) {
+    emoji = '🔍';
+    title = 'Keyword Kosong';
+    desc = 'Kamu belum mengisi keyword pencarian. Masukkan keyword untuk mulai scraping.';
+    tips = [
+      'Isi kolom Keyword di atas, contoh: "Etawanesia" atau "Susu Etawa"',
+      'Bisa juga pakai hashtag, contoh: "#viral"',
+      'Gunakan kata yang spesifik untuk hasil lebih relevan',
+    ];
+    showRaw = false;
+  } else if (isNoPrompt) {
+    emoji = '✏️';
+    title = 'Prompt Kosong';
+    desc = 'Tulis instruksi analisis dulu sebelum klik Analyze.';
+    tips = [
+      'Isi kolom Prompt Analisis di atas tombol Analyze',
+      'Contoh: "Temukan pain points yang sering muncul"',
+    ];
+    showRaw = false;
+  }
+
+  document.getElementById('errEmoji').textContent = emoji;
+  document.getElementById('errTitle').textContent = title;
+  document.getElementById('errDesc').innerHTML = desc || msg;
+
+  const rawEl = document.getElementById('errRaw');
+  if (showRaw && msg.length > 40) { rawEl.textContent = msg; rawEl.style.display = 'block'; }
+  else { rawEl.style.display = 'none'; }
+
+  const tipsBox = document.getElementById('errTipsBox');
+  if (tips.length) {
+    document.getElementById('errTipsList').innerHTML = tips.map(t => '<li>' + t + '</li>').join('');
+    tipsBox.style.display = 'block';
+  } else { tipsBox.style.display = 'none'; }
+
+  const footer = document.getElementById('errFooter');
+  footer.innerHTML = '';
+  if (extraBtn) footer.innerHTML += '<a class="modal-btn-link" href="' + extraBtn.url + '" target="_blank">↗ ' + extraBtn.label + '</a>';
+  footer.innerHTML += '<button class="modal-btn-ok" onclick="closeErrModal()">Mengerti</button>';
+
+  document.getElementById('errModal').classList.add('visible');
+}
+
 loadHistory();
+checkAiStatus();
+checkRateLimit();
 
 document.getElementById('queryInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') startScrape();
