@@ -10,10 +10,12 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "csv-parse": "^6.1.0",
     "csv-stringify": "^6.6.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "patchright": "^1.58.2",
     "tsx": "^4.21.0",
     "ws": "^8.19.0"

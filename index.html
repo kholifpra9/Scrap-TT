@@ -484,10 +484,13 @@
 <body>
 <div class="container">
 
-  <header>
-    <div class="badge">Comment Scraper</div>
-    <h1>TikTok<br><span>Comment</span> Harvester</h1>
-    <p class="sub">Scrape videos + all comments by keyword → dual CSV export + AI analysis &nbsp;<button class="help-btn" onclick="openGuide()" title="Cara Penggunaan">?</button></p>
+  <header style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+      <div class="badge">Comment Scraper</div>
+      <h1>TikTok<br><span>Comment</span> Harvester</h1>
+      <p class="sub">Scrape videos + all comments by keyword → dual CSV export + AI analysis &nbsp;<button class="help-btn" onclick="openGuide()" title="Cara Penggunaan">?</button></p>
+    </div>
+    <button class="btn outline" onclick="window.location.href='/api/logout'" style="padding: 8px 14px; font-size: 12px; margin-top: 4px;">Logout</button>
   </header>
 
   <!-- Search Form -->

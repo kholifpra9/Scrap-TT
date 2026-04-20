@@ -6,6 +6,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { config } from 'dotenv';
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
 
 config(); // Load .env
 
@@ -15,9 +17,52 @@ if (!fs.existsSync(RESULT_DIR)) fs.mkdirSync(RESULT_DIR);
 
 const app = express();
 const server = createServer(app);
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({ noServer: true });
 
 app.use(express.json());
+app.use(cookieParser());
+
+const JWT_SECRET = process.env.JWT_SECRET;
+const ADMIN_USER = process.env.ADMIN_USER;
+const ADMIN_PASS = process.env.ADMIN_PASS;
+
+// Auth endpoints
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === ADMIN_USER && password === ADMIN_PASS) {
+    const token = jwt.sign({ user: username }, JWT_SECRET, { expiresIn: '7d' });
+    res.cookie('token', token, { httpOnly: true, secure: false });
+    return res.json({ success: true });
+  }
+  return res.status(401).json({ error: 'Username atau password salah' });
+});
+
+app.get('/api/logout', (req, res) => {
+  res.clearCookie('token');
+  res.redirect('/login.html');
+});
+
+// Middleware JWT Auth
+app.use((req, res, next) => {
+  if (req.path === '/api/login' || req.path === '/login.html') {
+    return next();
+  }
+
+  const token = req.cookies?.token;
+  if (!token) {
+    if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Unauthorized' });
+    return res.redirect('/login.html');
+  }
+
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    next();
+  } catch (err) {
+    if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Invalid token' });
+    return res.redirect('/login.html');
+  }
+});
+
 app.use(express.static(__dirname));
 
 app.use((req, res, next) => {
@@ -26,14 +71,34 @@ app.use((req, res, next) => {
   next();
 });
 
-const commentJobs = new Map();
-const clients = new Map();
+server.on('upgrade', (request, socket, head) => {
+  const cookies = request.headers.cookie || '';
+  const match = cookies.match(/token=([^;]+)/);
+  const token = match ? match[1] : null;
 
-// ─── Rate Limiter ────────────────────────────────────────────────
+  if (!token) {
+    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+    socket.destroy();
+    return;
+  }
+
+  try {
+    jwt.verify(token, JWT_SECRET);
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
+  } catch (err) {
+    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+    socket.destroy();
+  }
+});
+
+const commentJobs = new Map();
+const clients = new Map();// ─── Rate Limiter ────────────────────────────────────────────────
 // Struktur: { ip -> { count: number, resetAt: timestamp } }
 const scrapeRateLimit = new Map();
-const RATE_LIMIT_MAX   = parseInt(process.env.RATE_LIMIT_MAX  || '3'); // max scrape per hari
-const RESET_HOUR     = parseInt(process.env.RATE_RESET_HOUR || '8'); // jam reset harian (default 08:00)
+const RATE_LIMIT_MAX = parseInt(process.env.RATE_LIMIT_MAX || '3'); // max scrape per hari
+const RESET_HOUR = parseInt(process.env.RATE_RESET_HOUR || '8'); // jam reset harian (default 08:00)
 
 // Hitung timestamp jam reset berikutnya
 function getNextResetAt() {
@@ -73,13 +138,13 @@ function checkRateLimit(req, res) {
   const info = getRateLimitInfo(ip);
 
   // Tambahkan header info ke response (opsional tapi berguna untuk debugging)
-  res.setHeader('X-RateLimit-Limit',     RATE_LIMIT_MAX);
+  res.setHeader('X-RateLimit-Limit', RATE_LIMIT_MAX);
   res.setHeader('X-RateLimit-Remaining', info.remaining);
-  res.setHeader('X-RateLimit-Reset',     Math.ceil(info.resetAt / 1000)); // Unix timestamp
+  res.setHeader('X-RateLimit-Reset', Math.ceil(info.resetAt / 1000)); // Unix timestamp
 
   if (info.count >= RATE_LIMIT_MAX) {
     const resetDate = new Date(info.resetAt);
-    const resetStr  = resetDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    const resetStr = resetDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     res.status(429).json({
       error: `Batas scraping harian tercapai (${RATE_LIMIT_MAX}x/hari). Reset jam ${resetStr}.`,
       resetAt: info.resetAt,
@@ -165,7 +230,7 @@ app.post('/api/scrape-comments', (req, res) => {
       const folderMatch = line.match(/Output folder[^:]*:\s*(.+)/);
       if (folderMatch) {
         const folder = path.basename(folderMatch[1].trim());
-        job.videosCsv   = `result/${folder}/videos.csv`;
+        job.videosCsv = `result/${folder}/videos.csv`;
         job.commentsCsv = `result/${folder}/comments.csv`;
       }
     });
@@ -186,7 +251,7 @@ app.post('/api/scrape-comments', (req, res) => {
       .filter(f => f.startsWith(`scrape_${safeQuery}_`))
       .sort().pop();
     if (scrapeFolder) {
-      if (!job.videosCsv)   job.videosCsv   = `result/${scrapeFolder}/videos.csv`;
+      if (!job.videosCsv) job.videosCsv = `result/${scrapeFolder}/videos.csv`;
       if (!job.commentsCsv) job.commentsCsv = `result/${scrapeFolder}/comments.csv`;
     }
     broadcast(clientId, { type: 'done', jobId, status: job.status, videosCsv: job.videosCsv, commentsCsv: job.commentsCsv, videoCount: job.videoCountResult, commentCount: job.commentCountResult, duration: ((job.endTime - job.startTime) / 1000).toFixed(1) });
@@ -293,9 +358,9 @@ app.post('/api/analyze', async (req, res) => {
 
   // Bangun konteks bisnis dari env
   const bisnisInfo = [
-    process.env.AI_BISNIS    ? `Bisnis: ${process.env.AI_BISNIS}` : null,
-    process.env.AI_INDUSTRI  ? `Industri: ${process.env.AI_INDUSTRI}` : null,
-    process.env.AI_TONE      ? `Tone jawaban: ${process.env.AI_TONE}` : null,
+    process.env.AI_BISNIS ? `Bisnis: ${process.env.AI_BISNIS}` : null,
+    process.env.AI_INDUSTRI ? `Industri: ${process.env.AI_INDUSTRI}` : null,
+    process.env.AI_TONE ? `Tone jawaban: ${process.env.AI_TONE}` : null,
   ].filter(Boolean).join('\n');
 
   const systemPrompt = process.env.AI_SYSTEM_PROMPT ||
@@ -355,10 +420,10 @@ app.get('/api/rate-limit-status', (req, res) => {
   const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress;
   const info = getRateLimitInfo(ip);
   res.json({
-    limit:     RATE_LIMIT_MAX,
-    used:      info.count,
+    limit: RATE_LIMIT_MAX,
+    used: info.count,
     remaining: info.remaining,
-    resetAt:   info.resetAt,
+    resetAt: info.resetAt,
   });
 });
 
