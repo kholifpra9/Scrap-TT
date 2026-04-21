@@ -114,11 +114,17 @@ function cleanOldFolders() {
     .filter(f =>
       f.startsWith('scrape_') &&
       fs.statSync(path.join(RESULT_DIR, f)).isDirectory()
-    )
-    .sort(); // nama folder mengandung timestamp, sort ascending = terlama duluan
+    );
+
+  // Ekstrak timestamp dari nama folder dan sort berdasarkan timestamp ascending (terlama duluan)
+  const foldersWithTimestamp = scrapeFolders.map(folder => {
+    const parts = folder.split('_');
+    const timestamp = parseInt(parts[parts.length - 1]) || 0; // fallback jika tidak ada timestamp
+    return { name: folder, timestamp };
+  }).sort((a, b) => a.timestamp - b.timestamp);
 
   // Hapus hanya jika sudah melebihi batas
-  const toDelete = scrapeFolders.slice(0, Math.max(0, scrapeFolders.length - KEEP_FOLDERS));
+  const toDelete = foldersWithTimestamp.slice(0, Math.max(0, foldersWithTimestamp.length - KEEP_FOLDERS)).map(f => f.name);
   toDelete.forEach(folder => {
     fs.rmSync(path.join(RESULT_DIR, folder), { recursive: true, force: true });
     console.log(`🗑️ Deleted old folder: result/${folder}`);
