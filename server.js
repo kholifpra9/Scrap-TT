@@ -106,16 +106,24 @@ function broadcast(clientId, data) {
 
 const KEEP_FOLDERS = 5;
 
+function getFolderTimestamp(folderName) {
+  // Format: scrape_<keyword>_<timestamp>
+  // Keyword bisa mengandung underscore, jadi ambil bagian paling akhir
+  const parts = folderName.split('_');
+  const ts = parseInt(parts[parts.length - 1]);
+  return isNaN(ts) ? 0 : ts;
+}
+
 function cleanOldFolders() {
   if (!fs.existsSync(RESULT_DIR)) return;
 
-  // Baca langsung dari disk — tidak bergantung pada in-memory commentJobs
+  // Baca dari disk, sort by timestamp ascending (terlama di index 0)
   const scrapeFolders = fs.readdirSync(RESULT_DIR)
     .filter(f =>
       f.startsWith('scrape_') &&
       fs.statSync(path.join(RESULT_DIR, f)).isDirectory()
     )
-    .sort(); // nama folder mengandung timestamp, sort ascending = terlama duluan
+    .sort((a, b) => getFolderTimestamp(a) - getFolderTimestamp(b));
 
   // Hapus hanya jika sudah melebihi batas
   const toDelete = scrapeFolders.slice(0, Math.max(0, scrapeFolders.length - KEEP_FOLDERS));
@@ -156,10 +164,16 @@ app.post('/api/scrape-comments', (req, res) => {
       if (vidMatch) job.videosCsv = vidMatch[0].replace(/\\/g, '/');
       const comMatch = line.match(/comments-[^\s]+\.csv/);
       if (comMatch) job.commentsCsv = comMatch[0].replace(/\\/g, '/');
-      if (line.includes('✅ DONE') || line.includes('Videos  :') || line.includes('Comments:')) {
-        const vCount = line.match(/(\d+).*videos/i);
-        const cCount = line.match(/(\d+).*comments/i);
+      // Parse jumlah video — cocok dengan format "Videos  :" atau "Videos    :"
+      const vLine = line.match(/videos\s*:/i);
+      if (vLine) {
+        const vCount = line.match(/(\d+)/);
         if (vCount) job.videoCountResult = parseInt(vCount[1]);
+      }
+      // Parse jumlah komentar — cocok dengan "Saved     :" atau "Comments:"
+      const cLine = line.match(/(?:saved|comments)\s*:/i);
+      if (cLine) {
+        const cCount = line.match(/(\d+)/);
         if (cCount) job.commentCountResult = parseInt(cCount[1]);
       }
       const folderMatch = line.match(/Output folder[^:]*:\s*(.+)/);
