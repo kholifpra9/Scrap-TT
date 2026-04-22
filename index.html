@@ -628,7 +628,7 @@
         <div class="guide-info-icon">&#128260;</div>
         <div>
           <div class="guide-info-title">Kuota Harian</div>
-          <div class="guide-info-desc">Maks. <strong>3 kali</strong> scraping per hari. Reset setiap pukul <strong>08:00</strong>.</div>
+          <div class="guide-info-desc">Maks. <strong>20 kali</strong> scraping per hari. Reset setiap pukul <strong>08:00</strong>.</div>
         </div>
       </div>
       <div class="guide-info-item">
@@ -657,7 +657,7 @@
     <div class="guide-divider"></div>
 
     <div class="guide-chips">
-      <span class="gchip red">&#128683; 3x / hari</span>
+      <span class="gchip red">&#128683; 20x / hari</span>
       <span class="gchip red">&#9200; Reset 08:00</span>
       <span class="gchip">&#127909; Maks. 200 video</span>
       <span class="gchip">&#128172; Maks. 9999 komen</span>
@@ -965,8 +965,8 @@ async function loadHistory() {
         <div class="history-meta">${j.videoCount}v · ${j.commentCount}c</div>
         ${j.duration ? `<div class="history-meta">${j.duration}s</div>` : ''}
         <span class="tag ${j.status}">${j.status}</span>
-        ${j.videosCsv ? `<button class="btn-dl" style="padding:5px 10px;font-size:11px" onclick="dl('${j.videosCsv}')">📹</button>` : ''}
-        ${j.commentsCsv ? `<button class="btn-dl" style="padding:5px 10px;font-size:11px" onclick="dl('${j.commentsCsv}')">💬</button>` : ''}
+        ${j.videosCsv ? `<button class="btn-dl" style="padding:5px 10px;font-size:11px" onclick="dl('${j.videosCsv}')">📹 Download Videos CSV</button>` : ''}
+        ${j.commentsCsv ? `<button class="btn-dl" style="padding:5px 10px;font-size:11px" onclick="dl('${j.commentsCsv}')">💬 Download Comments CSV</button>` : ''}
       </div>
     `).join('');
   } catch {}

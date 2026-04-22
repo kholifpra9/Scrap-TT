@@ -109,6 +109,7 @@ const KEEP_FOLDERS = 5;
 function getFolderTimestamp(folderName) {
   // Format: scrape_<keyword>_<timestamp>
   // Keyword bisa mengandung underscore, jadi ambil bagian paling akhir
+  
   const parts = folderName.split('_');
   const ts = parseInt(parts[parts.length - 1]);
   return isNaN(ts) ? 0 : ts;
@@ -236,7 +237,7 @@ app.get('/api/jobs-comments', (req, res) => {
 
     return {
       id: folder,
-      query: folder.replace('scrape_', '').split('_')[0],
+      query: folder.replace(/^scrape_/, '').replace(/_\d+$/, '').replace(/_/g, ' '),
       videoCount: '-', // optional kalau mau parsing file
       commentCount: '-',
       status: 'done',
