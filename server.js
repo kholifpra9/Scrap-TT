@@ -111,6 +111,15 @@ function broadcast(clientId, data) {
 
 const KEEP_FOLDERS = 5;
 
+function getFolderTimestamp(folderName) {
+  // Format: scrape_<keyword>_<timestamp>
+  // Keyword bisa mengandung underscore, jadi ambil bagian paling akhir
+
+  const parts = folderName.split('_');
+  const ts = parseInt(parts[parts.length - 1]);
+  return isNaN(ts) ? 0 : ts;
+}
+
 function cleanOldFolders() {
   if (!fs.existsSync(RESULT_DIR)) return;
 
@@ -219,8 +228,37 @@ app.post("/api/scrape-comments", (req, res) => {
       });
   });
 
-  proc.stderr.on("data", (data) => {
-    const line = "⚠️ " + data.toString();
+  proc.stdout.on('data', (data) => {
+    data.toString().split('\n').filter(Boolean).forEach(line => {
+      job.logs.push(line);
+      broadcast(clientId, { type: 'log', jobId, line });
+      const vidMatch = line.match(/videos-[^\s]+\.csv/);
+      if (vidMatch) job.videosCsv = vidMatch[0].replace(/\\/g, '/');
+      const comMatch = line.match(/comments-[^\s]+\.csv/);
+      if (comMatch) job.commentsCsv = comMatch[0].replace(/\\/g, '/');
+      // Parse jumlah video — cocok dengan format "Videos  :" atau "Videos    :"
+      const vLine = line.match(/videos\s*:/i);
+      if (vLine) {
+        const vCount = line.match(/(\d+)/);
+        if (vCount) job.videoCountResult = parseInt(vCount[1]);
+      }
+      // Parse jumlah komentar — cocok dengan "Saved     :" atau "Comments:"
+      const cLine = line.match(/(?:saved|comments)\s*:/i);
+      if (cLine) {
+        const cCount = line.match(/(\d+)/);
+        if (cCount) job.commentCountResult = parseInt(cCount[1]);
+      }
+      const folderMatch = line.match(/Output folder[^:]*:\s*(.+)/);
+      if (folderMatch) {
+        const folder = path.basename(folderMatch[1].trim());
+        job.videosCsv = `result/${folder}/videos.csv`;
+        job.commentsCsv = `result/${folder}/comments.csv`;
+      }
+    });
+  });
+
+  proc.stderr.on('data', (data) => {
+    const line = '⚠️ ' + data.toString();
     job.logs.push(line);
     broadcast(clientId, { type: "log", jobId, line });
   });
@@ -276,10 +314,10 @@ app.get("/api/jobs-comments", (req, res) => {
 
     return {
       id: folder,
-      query: folder.replace("scrape_", "").split("_")[0],
-      videoCount: "-", // optional kalau mau parsing file
-      commentCount: "-",
-      status: "done",
+      query: folder.replace(/^scrape_/, '').replace(/_\d+$/, '').replace(/_/g, ' '),
+      videoCount: '-', // optional kalau mau parsing file
+      commentCount: '-',
+      status: 'done',
       videosCsv: videosCsv ? `/result/${folder}/${videosCsv}` : null,
       commentsCsv: commentsCsv ? `/result/${folder}/${commentsCsv}` : null,
       duration: null,

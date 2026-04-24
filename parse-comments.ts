@@ -24,23 +24,35 @@ const videosCsvFile = path.join(outputFolder, `videos.csv`);
 const commentsCsvFile = path.join(outputFolder, `comments.csv`);
 
 fs.writeFileSync(videosCsvFile, 'videoId,username,nickname,views,likes,comments,shares,saves,description,hashtags,videoUrl,scrapeDate\n');
-fs.writeFileSync(commentsCsvFile, 'commentId,videoId,videoUrl,commenterUsername,commenterNickname,commenterUid,commentText,likes,replyCount,commentDate,scrapeDate\n');
+fs.writeFileSync(commentsCsvFile, 'commentId,videoId,videoUrl,commenterUsername,commenterNickname,commenterUid,commentText,likes,replyCount,parentCommentId,isReply,commentDate,scrapeDate\n');
 
 console.log(`📂 Output folder: ${outputFolder}`);
 console.log(`📁 Videos  : videos.csv`);
 console.log(`📁 Comments: comments.csv`);
 
+function classifyComment(text: string): 'valid' | 'empty' | 'emoji_only' | 'sticker_only' | 'mention_only' | 'too_short' {
+  if (!text || !text.trim()) return 'empty';
+
+  // Cek apakah hanya sticker
+  const noSticker = text.replace(/\[(?:sticker|emoji):[^\]]*\]/gi, '').trim();
+  if (!noSticker) return 'sticker_only';
+
+  // Cek apakah hanya mention
+  const noMention = noSticker.replace(/@\S+/g, '').trim();
+  if (!noMention) return 'mention_only';
+
+  // Cek apakah hanya emoji
+  const noEmoji = noMention.replace(/\p{Emoji}/gu, '').replace(/[^\p{L}\p{N}]/gu, '').trim();
+  if (!noEmoji) return 'emoji_only';
+
+  // Terlalu pendek
+  if (noEmoji.length < 3) return 'too_short';
+
+  return 'valid';
+}
+
 function isValidComment(text: string): boolean {
-  if (!text || !text.trim()) return false;
-
-  let clean = text
-    .replace(/\[(?:sticker|emoji):[^\]]*\]/gi, '')
-    .replace(/@\S+/g, '')
-    .replace(/\p{Emoji}/gu, '')
-    .replace(/[^\p{L}\p{N}]/gu, '')
-    .trim();
-
-  return clean.length >= 3;
+  return classifyComment(text) === 'valid';
 }
 
 let browser: any = null;
@@ -143,6 +155,27 @@ process.on('SIGINT', async () => {
     console.log(`[STEP 2] Scraping comments (max ${maxCommentsPerVideo}/video)...\n`);
 
     let totalComments = 0;
+    let totalReplies = 0;
+    let totalCaptured = 0;
+    const filterStats = { empty: 0, emoji_only: 0, sticker_only: 0, mention_only: 0, too_short: 0 };
+
+    // Helper tulis satu baris comment/reply ke CSV
+    function writeCommentRow(c: any, videoId: string, videoUrl: string, scrapeDate: string, parentCid: string = '') {
+      const commentDate = new Date(c.create_time * 1000).toISOString();
+      const commenterUsername = c.user?.unique_id || 'N/A';
+      const commenterNickname = (c.user?.nickname || 'N/A').replace(/,/g, ' ');
+      const commenterUid = c.user?.uid || 'N/A';
+      const text = (c.text || '').replace(/,/g, ' ').replace(/\n/g, ' ');
+      const isReply = parentCid ? '1' : '0';
+      const row = [
+        c.cid, videoId, videoUrl,
+        commenterUsername, commenterNickname, commenterUid,
+        text, c.digg_count || 0, c.reply_comment_total || 0,
+        parentCid, isReply,
+        commentDate, scrapeDate
+      ].map((val: any) => `"${val.toString().replace(/"/g, '""')}"`).join(',');
+      fs.appendFileSync(commentsCsvFile, row + '\n');
+    }
 
     for (let i = 0; i < videos.length; i++) {
       const v = videos[i];
@@ -151,6 +184,31 @@ process.on('SIGINT', async () => {
       const videoUrl = `https://www.tiktok.com/@${username}/video/${videoId}`;
 
       console.log(`\n[${i + 1}/${videos.length}] @${username} — ${videoId}`);
+
+      // Pasang handler SEBELUM navigasi — tidak ada response yang terlewat
+      const commentMap = new Map<string, any>();
+      const replyMap = new Map<string, any>(); // key: reply cid, value: reply + _parentCid
+
+      const commentHandler = async (response: any) => {
+        if (response.url().includes('/api/comment/list/')) {
+          try {
+            const data = await response.json();
+            if (data.comments?.length) {
+              data.comments.forEach((c: any) => {
+                commentMap.set(c.cid, c);
+                // Ambil reply preview yang sudah ada di response
+                if (c.reply_comment?.length) {
+                  c.reply_comment.forEach((r: any) => {
+                    replyMap.set(r.cid, { ...r, _parentCid: c.cid });
+                  });
+                }
+              });
+              console.log(`  💬 ${commentMap.size} comments, ${replyMap.size} replies captured`);
+            }
+          } catch { }
+        }
+      };
+      page.on('response', commentHandler);
 
       // Buka halaman video supaya cookies/token ter-set
       const currentUrl = page.url();
@@ -165,46 +223,10 @@ process.on('SIGINT', async () => {
         if (!clicked) {
           await page.goto(videoUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
         }
-        await page.waitForTimeout(4000);
       }
 
-      // Ambil cookies + params dari halaman untuk hit API comment langsung
-      const commentMap = new Map<string, any>();
-
-      // Intercept response dulu dari initial load
-      const firstLoad = new Promise<void>((resolve) => {
-        const handler = async (response: any) => {
-          if (response.url().includes('/api/comment/list/')) {
-            try {
-              const data = await response.json();
-              if (data.comments?.length) {
-                data.comments.forEach((c: any) => commentMap.set(c.cid, c));
-                console.log(`  💬 ${commentMap.size} comments captured`);
-              }
-            } catch { }
-            page.off('response', handler);
-            resolve();
-          }
-        };
-        page.on('response', handler);
-        setTimeout(() => { page.off('response', handler); resolve(); }, 8000);
-      });
-
-      await firstLoad;
-
-      // Sekarang lanjut pagination via scroll — intercept semua response berikutnya
-      const commentHandler = async (response: any) => {
-        if (response.url().includes('/api/comment/list/')) {
-          try {
-            const data = await response.json();
-            if (data.comments?.length) {
-              data.comments.forEach((c: any) => commentMap.set(c.cid, c));
-              console.log(`  💬 ${commentMap.size} comments captured`);
-            }
-          } catch { }
-        }
-      };
-      page.on('response', commentHandler);
+      // Tunggu komentar awal ter-load (termasuk burst response cursor 0, 20, 40)
+      await page.waitForTimeout(5000);
 
       // Scroll panel komentar sampai habis
       let noNew = 0;
@@ -245,7 +267,7 @@ process.on('SIGINT', async () => {
           }
         });
 
-        await page.waitForTimeout(1500);
+        await page.waitForTimeout(2000);
 
         if (commentMap.size === prevSize) {
           noNew++;
@@ -253,17 +275,17 @@ process.on('SIGINT', async () => {
           if (noNew === 3) {
             // Coba tekan End key
             await page.keyboard.press('End');
-            await page.waitForTimeout(1000);
-          }
-
-          if (noNew === 5) {
-            // Coba Tab ke elemen komentar
-            await page.keyboard.press('Tab');
-            await page.keyboard.press('End');
             await page.waitForTimeout(1500);
           }
 
-          if (noNew >= 10) {
+          if (noNew === 7) {
+            // Coba Tab ke elemen komentar
+            await page.keyboard.press('Tab');
+            await page.keyboard.press('End');
+            await page.waitForTimeout(2000);
+          }
+
+          if (noNew >= 20) {
             console.log(`  ⚠️ No more comments after ${tries} tries. Total: ${commentMap.size}`);
             break;
           }
@@ -274,27 +296,41 @@ process.on('SIGINT', async () => {
 
       page.off('response', commentHandler);
 
-      // Simpan komentar
-      const finalComments = Array.from(commentMap.values())
-        .filter((c: any) => isValidComment(c.text || ''))
-        .slice(0, maxCommentsPerVideo);
-      console.log(`  ✅ ${finalComments.length} comments saved`);
+      // Klasifikasi & hitung filter per video
+      const allCaptured = Array.from(commentMap.values());
+      totalCaptured += allCaptured.length;
+
+      const videoFilterStats = { empty: 0, emoji_only: 0, sticker_only: 0, mention_only: 0, too_short: 0 };
+      const finalComments: any[] = [];
+
+      for (const c of allCaptured) {
+        const result = classifyComment(c.text || '');
+        if (result === 'valid') {
+          if (finalComments.length < maxCommentsPerVideo) finalComments.push(c);
+        } else {
+          videoFilterStats[result as keyof typeof videoFilterStats]++;
+          filterStats[result as keyof typeof filterStats]++;
+        }
+      }
+
+      const filtered = allCaptured.length - finalComments.length;
+      console.log(`  ✅ ${finalComments.length} saved, ${filtered} filtered (emoji:${videoFilterStats.emoji_only} sticker:${videoFilterStats.sticker_only} mention:${videoFilterStats.mention_only} short:${videoFilterStats.too_short} empty:${videoFilterStats.empty})`);
       totalComments += finalComments.length;
 
-      finalComments.forEach((c: any) => {
-        const commentDate = new Date(c.create_time * 1000).toISOString();
-        const commenterUsername = c.user?.unique_id || 'N/A';
-        const commenterNickname = (c.user?.nickname || 'N/A').replace(/,/g, ' ');
-        const commenterUid = c.user?.uid || 'N/A';
-        const text = (c.text || '').replace(/,/g, ' ').replace(/\n/g, ' ');
-        const row = [
-          c.cid, videoId, videoUrl,
-          commenterUsername, commenterNickname, commenterUid,
-          text, c.digg_count || 0, c.reply_comment_total || 0,
-          commentDate, scrapeDate
-        ].map((val: any) => `"${val.toString().replace(/"/g, '""')}"`).join(',');
-        fs.appendFileSync(commentsCsvFile, row + '\n');
-      });
+      // Simpan komentar utama
+      finalComments.forEach((c: any) => writeCommentRow(c, videoId, videoUrl, scrapeDate));
+
+      // Simpan replies dari preview yang sudah ada di response
+      let repliesSaved = 0;
+      for (const r of replyMap.values()) {
+        if (classifyComment(r.text || '') === 'valid') {
+          writeCommentRow(r, videoId, videoUrl, scrapeDate, r._parentCid);
+          repliesSaved++;
+        }
+      }
+      if (repliesSaved > 0) console.log(`  ↩️  ${repliesSaved} replies saved`);
+      totalReplies += repliesSaved;
+      totalComments += repliesSaved;
 
       // Kembali ke search untuk video berikutnya
       if (i < videos.length - 1) {
@@ -307,10 +343,20 @@ process.on('SIGINT', async () => {
       }
     }
 
+    const totalFiltered = totalCaptured - totalComments;
     console.log(`\n✅ DONE!`);
-    console.log(`   📂 Folder  : ${outputFolder}`);
-    console.log(`   📹 Videos  : ${videos.length} → videos.csv`);
-    console.log(`   💬 Comments: ${totalComments} → comments.csv`);
+    console.log(`   📂 Folder    : ${outputFolder}`);
+    console.log(`   📹 Videos    : ${videos.length} → videos.csv`);
+    console.log(`   💬 Captured  : ${totalCaptured} comments`);
+    console.log(`   ✅ Saved     : ${totalComments} (${totalComments - totalReplies} comments + ${totalReplies} replies) → comments.csv`);
+    console.log(`   🚫 Filtered  : ${totalFiltered} comments`);
+    if (totalFiltered > 0) {
+      console.log(`      emoji only  : ${filterStats.emoji_only}`);
+      console.log(`      sticker only: ${filterStats.sticker_only}`);
+      console.log(`      mention only: ${filterStats.mention_only}`);
+      console.log(`      too short   : ${filterStats.too_short}`);
+      console.log(`      empty       : ${filterStats.empty}`);
+    }
 
     await browser.close();
   } catch (error: any) {
