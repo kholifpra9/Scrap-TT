@@ -54,8 +54,9 @@ process.on('SIGINT', async () => {
 (async () => {
   try {
     console.log('🚀 Starting TikTok Comment Scraper...\n');
-
-    const sessionDir = path.join(os.tmpdir(), 'patchright_tiktok');
+    
+    const jobId = process.env.JOB_ID || Date.now().toString();
+    const sessionDir = path.join(os.tmpdir(), `patchright_tiktok_${jobId}`);
     browser = await chromium.launchPersistentContext(sessionDir, {
       channel: 'chrome',
       headless: false,
